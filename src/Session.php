@@ -75,7 +75,8 @@ class Session
             if (is_dir($save_path))
             {
                 session_save_path($save_path);
-                #ini_set('session.gc_probability', '1');
+                # For GC in Debian
+                ini_set('session.gc_probability', '1');
             }
             else
             {
