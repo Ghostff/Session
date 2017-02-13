@@ -1,5 +1,13 @@
 # Session php(7.1)
-PHP Session Manager (non-blocking, flash, segment, session encryption)
+PHP Session Manager (non-blocking, flash, segment, session encryption). Uses PHP [open_ssl](http://php.net/manual/en/book.openssl.php) for optional encrypt/decryption of session data.
+
+###Driver support  Scope
+ - File&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;: `active`
+ - Cookie&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: `queued`
+ - Database&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: `queued`
+ - Memcached&nbsp;&nbsp;: `queued`
+ - Redis&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: `queued`
+
 
 #Initializing Session
 ```php
@@ -10,7 +18,6 @@ $session->registerErrorHandler(function($error)
 {
     # Debug::Log($error)
     # throw new  RuntimeException($error);
-    # how ever you like
 });
 ```
 
@@ -60,3 +67,9 @@ $segment->remove->flash->name;
 # Array
 $session->getAll();
 ```
+
+#Destroying session
+```php
+$session->destroy();
+```
+
