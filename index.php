@@ -29,6 +29,8 @@ else
     $segment->remove->name;
     $session->remove->flash->lname;
 
+    $session->regenerateID();
+
     new Dump($session->getAll(), $session->getID());
 
 }

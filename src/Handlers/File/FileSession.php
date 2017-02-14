@@ -111,7 +111,7 @@ class FileSession implements \Handlers\SessionInterface
         # Check that at least one value has been changed before starting up the session
         if ( ! $session_status || ($session_status && ($this->session[$this->segmented][$type][$name] != $value)))
         {
-            @session_start();
+            session_start();
             $_SESSION[$this->segmented][$type][$name] = $value;
             $this->session = $_SESSION;
             session_write_close();
@@ -199,7 +199,7 @@ class FileSession implements \Handlers\SessionInterface
                 sprintf('Id must be set before any output has been sent to the browser (started: %s/%s', $filename, $line_num)
             );
         }
-        elseif (trim($new_id) == false)
+        elseif (preg_match('/^[\w-,]{1,128}$/', $new_id) < 1)
         {
             throw new \InvalidArgumentException('Invalid Session ID provide');
         }
@@ -226,6 +226,6 @@ class FileSession implements \Handlers\SessionInterface
 
     public function regenerateID(bool $delete_old = false)
     {
-
+        session_start();
     }
 }
