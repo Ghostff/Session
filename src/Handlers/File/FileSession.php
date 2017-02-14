@@ -36,25 +36,35 @@ class FileSession implements \Handlers\SessionInterface
     {
         if ($this->sess_id != null)
         {
+            # Check if session is ruining ip it was initialized with
             if ($this->config->match_ip)
             {
                 $type = 'REMOTE_ADDR';
                 if (isset($_SESSION['__\prefab']['ip']) && ($_SESSION['__\prefab']['ip'] != $_SERVER[$type]))
                 {
-                    $this->newError('Session: IP address mismatch');
+                    $this->newError('Session IP address mismatch');
                     return false;
                 }
                 $_SESSION['__\prefab']['ip'] = $_SERVER[$type];
             }
+
+            # Check if session is ruining at the browser it was initialized from
             if ($this->config->match_browser)
             {
                 $type = 'HTTP_USER_AGENT';
                 if (isset($_SESSION['__\prefab']['browser']) && ($_SESSION['__\prefab']['browser'] != $_SERVER[$type]))
                 {
-                    $this->newError('Session: User Agent string mismatch');
+                    $this->newError('Session user agent string mismatch');
                     return false;
                 }
                 $_SESSION['__\prefab']['browser'] = $_SERVER[$type];
+            }
+
+            # Check if session has expired but still being used
+            if (($this->config->expiration !== 0) && ($this->config->expiration < time()))
+            {
+                $this->newError('Using expired session');
+                return false;
             }
         }
         return true;
@@ -179,7 +189,7 @@ class FileSession implements \Handlers\SessionInterface
 
     public function setId(string $new_id): void
     {
-        if ( ! is_null($this->sess_id) && trim($this->sess_id) != false)
+        if ( ! is_null($this->sess_id) || (session_status() === PHP_SESSION_ACTIVE))
         {
             throw new \RuntimeException('Session is active. The session id must be set right after Session::start().');
         }
@@ -214,7 +224,7 @@ class FileSession implements \Handlers\SessionInterface
         call_user_func_array($this->error_handler, [$message]);
     }
 
-    public function refresh()
+    public function regenerateID(bool $delete_old = false)
     {
 
     }
