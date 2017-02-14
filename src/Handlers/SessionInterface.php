@@ -9,7 +9,7 @@ interface SessionInterface
 
     public function destroy(): void;
 
-    public function id(): ?string;
+    public function getID(): ?string;
 
     public function registerErrorHandler(callable $error_handler): void;
 }

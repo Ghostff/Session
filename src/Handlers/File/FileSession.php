@@ -17,7 +17,6 @@ class FileSession implements \Handlers\SessionInterface
     private $remove = false;
     public $segmented = null;
 
-
     public function __construct(string $name = null, \stdClass $config)
     {
         $this->name = $name;
@@ -173,9 +172,31 @@ class FileSession implements \Handlers\SessionInterface
         $this->session = [];
     }
 
-    public function id(): ?string
+    public function getId(): ?string
     {
         return $this->sess_id;
+    }
+
+    public function setId(string $new_id): void
+    {
+        if ( ! is_null($this->sess_id) && trim($this->sess_id) != false)
+        {
+            throw new \RuntimeException('Session is active. The session id must be set right after Session::start().');
+        }
+        elseif (headers_sent($filename, $line_num))
+        {
+            throw new \RuntimeException(
+                sprintf('Id must be set before any output has been sent to the browser (started: %s/%s', $filename, $line_num)
+            );
+        }
+        elseif (trim($new_id) == false)
+        {
+            throw new \InvalidArgumentException('Invalid Session ID provide');
+        }
+        else
+        {
+            session_id($new_id);
+        }
     }
 
     public function getAll(): array

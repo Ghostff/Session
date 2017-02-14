@@ -25,11 +25,11 @@ else
     $segment->name = 'foobar segment';
     $segment->flash->name = 'foobar segment flash';
 
-    new Dump($session->getAll());
+    new Dump($session->getAll(), $session->getID());
     $segment->remove->name;
     $session->remove->flash->lname;
 
-    new Dump($session->getAll());
+    new Dump($session->getAll(), $session->getID());
 
 }
 ?>
