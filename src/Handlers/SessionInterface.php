@@ -47,7 +47,7 @@ interface SessionInterface
 
     public function id(string $id = null): string;
 
-	public function clear(string $namespace, bool $suppress_error = false): void;
+    public function clear(string $namespace, bool $suppress_error = false): void;
 
     public function registerErrorHandler(callable $error_handler): void;
 
