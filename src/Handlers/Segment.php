@@ -12,7 +12,7 @@ class Segment
 
     public function __construct(string $name, \Handlers\File\FileSession $session)
     {
-        # prevent overriding of default session data storage
+        # prevent overriding of default session data storage pre-defined indexes
         if ($name == '__\raw' || $name == '__\prefab')
         {
             throw new \InvalidArgumentException(sprintf('%s is a reserved name', $name));

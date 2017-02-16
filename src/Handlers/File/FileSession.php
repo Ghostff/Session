@@ -6,16 +6,19 @@ namespace Handlers\File;
 
 class FileSession implements \Handlers\SessionInterface
 {
-    public $config = null;
-    private $name = null;
-    private $sess_id = null;
-    private $session = [];
+	
+	public $segmented = null;
+	
+	private $name = null;
+	private $config = null;
+    private $sess_id = '';
     private $error_handler = null;
+	
+	private $session = [];
+	
     private $initialized = false;
-
     private $flashed = false;
     private $remove = false;
-    public $segmented = null;
 
     public function __construct(string $name = null, \stdClass $config)
     {
@@ -34,7 +37,7 @@ class FileSession implements \Handlers\SessionInterface
 
     private function checkSession(): bool
     {
-        if ($this->sess_id != null)
+        if ($this->sess_id != '')
         {
             # Check if session is ruining ip it was initialized with
             if ($this->config->match_ip)
@@ -66,6 +69,23 @@ class FileSession implements \Handlers\SessionInterface
                 $this->newError('Using expired session');
                 return false;
             }
+			
+			if (($this->config->rotate !== 0))
+			{
+				if ( ! isset($_SESSION['__\prefab']['rotate']))
+				{
+					$_SESSION['__\prefab']['rotate'] = $this->config->rotate + time();
+				}
+				else
+				{
+					if (time() >= $_SESSION['__\prefab']['rotate'])
+					{
+						$this->rotate(true, false);
+						# Restart rotate time
+						$_SESSION['__\prefab']['rotate'] = $this->config->rotate + time();
+					}
+				}
+			}
         }
         return true;
     }
@@ -88,11 +108,11 @@ class FileSession implements \Handlers\SessionInterface
 
             $expire =  ($this->config->expiration == 0) ? 0 : time() + $this->config->expiration;
             session_set_cookie_params($expire, $this->config->path, $this->getDomain(), $secured, $this->config->http_only);
-            if ( ! is_null($this->name))
-            {
-                session_name($this->name);
-            }
-
+			
+			if (isset($this->config->name))
+			{
+				session_name($this->config->name);
+			}
             session_start();
             setcookie(session_name(), session_id(), $expire, $this->config->path, $this->getDomain(), $secured, $this->config->http_only);
             # store current session ID
@@ -103,21 +123,71 @@ class FileSession implements \Handlers\SessionInterface
             session_write_close();
         }
     }
-
+	
     private function sessionType(string $type, string $name, $value): void
     {
         $this->init();
-        $session_status = isset($this->session[$this->segmented][$type][$name]);
+        $status = isset($this->session[$this->name][$this->segmented][$type][$name]);
         # Check that at least one value has been changed before starting up the session
-        if ( ! $session_status || ($session_status && ($this->session[$this->segmented][$type][$name] != $value)))
+        if ( ! $status || ($status && ($this->session[$this->name][$this->segmented][$type][$name] != $value)))
         {
-            session_start();
-            $_SESSION[$this->segmented][$type][$name] = $value;
+			# No need suppressing error because there won't be a case of it being open.
+			session_start();
+            $_SESSION[$this->name][$this->segmented][$type][$name] = $value;
             $this->session = $_SESSION;
             session_write_close();
         }
         $this->segmented = '__\raw';
     }
+	
+	private function newError(string $message): void
+    {
+        call_user_func_array($this->error_handler, [$message]);
+    }
+
+
+
+
+    public function rotate(bool $delete_old = false, bool $write_nd_close = true)
+    {
+		if (headers_sent($filename, $line_num))
+        {
+            throw new \RuntimeException(
+                sprintf('ID must be regenerated before any output is sent to the browser. (file: %s, line: %s)', $filename, $line_num)
+            );
+        }
+		
+		if (session_status() !== PHP_SESSION_ACTIVE)
+		{
+			@session_start();
+		}
+		session_regenerate_id($delete_old);
+		$this->sess_id = session_id();
+		if ($write_nd_close)
+		{
+			session_write_close();
+		}
+    }
+	
+	public function name(string $name = null): string
+	{
+		if ( ! is_null($name))
+		{
+			if ( $this->sess_id != '' || (session_status() === PHP_SESSION_ACTIVE))
+			{
+				throw new \RuntimeException('Session is active. The session id must be set right after Session::start().');
+			}
+			elseif (preg_match('/^[a-zA-Z]([\w]*)$/', $name) < 1)
+			{
+				throw new \InvalidArgumentException('
+					Invalid Session name. (allows [\w] and can\'t consist of numbers only. must have a letter)
+				');
+			}
+			$this->config->name = $name;
+			return '';
+		}
+		return $this->config->name;
+	}
 
     public function __set(string $name, $value): void
     {
@@ -151,13 +221,13 @@ class FileSession implements \Handlers\SessionInterface
 
         $this->init();
         # buffer session
-        $session = $this->session[$this->segmented][$type][$name] ?? null;
+        $session = $this->session[$this->name][$this->segmented][$type][$name] ?? null;
         # Remove flash from session
         if ($this->flashed || $this->remove)
         {
             $this->flashed = false;
             $this->remove = false;
-            unset($this->session[$this->segmented][$type][$name]);
+            unset($this->session[$this->name][$this->segmented][$type][$name]);
         }
         $this->segmented = '__\raw';
         return $session;
@@ -167,7 +237,22 @@ class FileSession implements \Handlers\SessionInterface
     {
         return new \Handlers\Segment($name, $this);
     }
-
+	
+	public function clear(string $namespace, bool $if_exists = false): void
+    {
+		if (isset($this->session[$namespace]))
+		{
+			unset($this->session[$namespace]);
+		}
+		else
+		{
+			if ( ! $if_exists)
+			{
+				throw new \RuntimeException(sprintf('%s does not exists in current session namespace', $namespace));
+			}
+		}
+	}
+	
     public function destroy(): void
     {
         @session_start();
@@ -182,35 +267,43 @@ class FileSession implements \Handlers\SessionInterface
         $this->session = [];
     }
 
-    public function getId(): ?string
+    public function id(string $new_id = null): string
     {
+		if ( ! is_null($new_id))
+		{
+			if ( $this->sess_id != '' || (session_status() === PHP_SESSION_ACTIVE))
+			{
+				throw new \RuntimeException('Session is active. The session id must be set right after Session::start().');
+			}
+			elseif (headers_sent($filename, $line_num))
+			{
+				throw new \RuntimeException(
+					sprintf('ID must be set before any output is sent to the browser (file: %s, line: %s)', $filename, $line_num)
+				);
+			}
+			elseif (preg_match('/^[\w-,]{1,128}$/', $new_id) < 1)
+			{
+				throw new \InvalidArgumentException('Invalid Session ID provide');
+			}
+			else
+			{
+				session_id($new_id);
+			}
+			return '';
+		}
         return $this->sess_id;
     }
 
-    public function setId(string $new_id): void
+    public function getAll(string $name = null): array
     {
-        if ( ! is_null($this->sess_id) || (session_status() === PHP_SESSION_ACTIVE))
-        {
-            throw new \RuntimeException('Session is active. The session id must be set right after Session::start().');
-        }
-        elseif (headers_sent($filename, $line_num))
-        {
-            throw new \RuntimeException(
-                sprintf('Id must be set before any output has been sent to the browser (started: %s/%s', $filename, $line_num)
-            );
-        }
-        elseif (preg_match('/^[\w-,]{1,128}$/', $new_id) < 1)
-        {
-            throw new \InvalidArgumentException('Invalid Session ID provide');
-        }
-        else
-        {
-            session_id($new_id);
-        }
-    }
-
-    public function getAll(): array
-    {
+		if ( ! is_null($name))
+		{
+			if (isset($this->session[$name]))
+			{
+				throw new \RuntimeException(sprintf('%s does not exists in current session namespace', $name));
+			}
+			return $this->session[$name];
+		}
         return $this->session;
     }
 
@@ -219,13 +312,4 @@ class FileSession implements \Handlers\SessionInterface
         $this->error_handler = $error_handler;
     }
 
-    private function newError(string $message): void
-    {
-        call_user_func_array($this->error_handler, [$message]);
-    }
-
-    public function regenerateID(bool $delete_old = false)
-    {
-        session_start();
-    }
 }
