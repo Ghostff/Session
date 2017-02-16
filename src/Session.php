@@ -18,12 +18,12 @@ class Session
         return static::$config;
     }
 
-    public static function start(string $name = null)
+    public static function start(string $name = '__btr')
     {
         #check if session name works
-        if ((trim($name) != false) && (preg_match('/^[\w ]+$/', $name) < 1))
+        if ((trim($name) != false) && (preg_match('/^[\w]+$/', $name) < 1))
         {
-            throw new InvalidArgumentException('Invalid Session name. (allows [a-z][0-9][space])');
+            throw new InvalidArgumentException('Invalid Session namespace. (allows alphanumrics and underscors)');
         }
 
         $config = static::loadConfig();

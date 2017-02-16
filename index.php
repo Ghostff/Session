@@ -25,14 +25,14 @@ else
     $segment->name = 'foobar segment';
     $segment->flash->name = 'foobar segment flash';
 
-    new Dump($session->getAll(), $session->getID());
     $segment->remove->name;
     $session->remove->flash->lname;
+	
+	$session1 = Session::start('Demo1');
+	$session1->name = 'chrys';
 
-    $session->regenerateID();
 
-    new Dump($session->getAll(), $session->getID());
-
+	new Dump($session1->getAll(), $segment->flash->name, $session->getAll());
 }
 ?>
 <form method="post">
