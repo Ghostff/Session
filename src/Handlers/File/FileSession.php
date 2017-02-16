@@ -40,55 +40,55 @@ class FileSession implements \Handlers\SessionInterface
 {
 
     /**
-     * active segment
+     * Active segment
      * @var null|string
      */
     public $segmented = null;
 
     /**
-     * current namespace
+     * Current namespace
      * @var null|string
      */
     private $name = null;
 
     /**
-     * configuration buffer
+     * Configuration buffer
      * @var null|\stdClass
      */
     private $config = null;
 
     /**
-     * active session identifier
+     * Active session identifier
      * @var string
      */
     private $sess_id = '';
 
     /**
-     * error handler referencer
+     * Error handler referencer
      * @var null
      */
     private $error_handler = null;
 
     /**
-     * session data
+     * Session data
      * @var array
      */
     private $session = [];
 
     /**
-     * session has been initialized
+     * Session has been initialized
      * @var bool
      */
     private $initialized = false;
 
     /**
-     * last get was a flash
+     * Last get was a flash
      * @var bool
      */
     private $flashed = false;
 
     /**
-     * last get was a remove
+     * Last get was a remove
      * @var bool
      */
     private $remove = false;
@@ -107,7 +107,7 @@ class FileSession implements \Handlers\SessionInterface
     }
 
     /**
-     * get the domain name
+     * Get the domain name
      *
      * @return string
      */
@@ -121,7 +121,7 @@ class FileSession implements \Handlers\SessionInterface
 
 
     /**
-     * validates session data static data
+     * Validates session data static data
      * @return bool
      */
     private function checkSession(): bool
@@ -217,7 +217,7 @@ class FileSession implements \Handlers\SessionInterface
     }
 
     /**
-     * sets session data depending on namespace and segment
+     * Sets session data depending on namespace and segment
      *
      * @param string $type
      * @param string $name
@@ -240,7 +240,7 @@ class FileSession implements \Handlers\SessionInterface
     }
 
     /**
-     * calls user provide error handler
+     * Calls user provide error handler
      *
      * @param string $message
      */
@@ -278,7 +278,7 @@ class FileSession implements \Handlers\SessionInterface
     }
 
     /**
-     * sets or retrieve session name
+     * Sets or retrieve session name
      *
      * @param string|null $name
      * @return string
@@ -304,7 +304,7 @@ class FileSession implements \Handlers\SessionInterface
     }
 
     /**
-     * adds a new item to the current session namespace or segment
+     * Adds a new item to the current session namespace or segment
      *
      * @param string $name
      * @param $value
@@ -321,7 +321,7 @@ class FileSession implements \Handlers\SessionInterface
     }
 
     /**
-     * gets an item from current session namespace of segment
+     * Gets an item from current session namespace of segment
      *
      * @param string $name
      * @return $this|null
@@ -360,7 +360,7 @@ class FileSession implements \Handlers\SessionInterface
     }
 
     /**
-     * sub categorize session datas
+     * Sub categorize session datas
      *
      * @param string $name
      * @return \Handlers\Segment
@@ -371,7 +371,7 @@ class FileSession implements \Handlers\SessionInterface
     }
 
     /**
-     * clears all the data is a specific namespace
+     * Clears all the data is a specific namespace
      *
      * @param string $namespace
      * @param bool $if_exists
@@ -442,7 +442,7 @@ class FileSession implements \Handlers\SessionInterface
     }
 
     /**
-     * get all session data including namespace and segments
+     * Get all session data including namespace and segments
      *
      * @param string|null $name
      * @return array

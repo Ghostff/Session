@@ -11,7 +11,7 @@ PHP Session Manager (non-blocking, flash, segment, session encryption). Uses PHP
 
 #Initializing Session
 ```php
-$session = Session::start($optional_session_name);
+$session = Session::start($optional_session_namespace);
 
 # Register Error Handler
 $session->registerErrorHandler(function($error)
@@ -65,7 +65,33 @@ $segment->remove->flash->name;
 #Retrieve all session and flash data
 ```php
 # Array
-$session->getAll();
+$session->all();
+```
+
+#Retrieve or set session name
+```php
+$session = Session::start($optional_session_namespace);
+# set
+$session->name('foo');
+
+# retrieve
+$session->name(); #outputs foo
+```
+
+#Retrieve or set session id
+```php
+$session = Session::start($optional_session_namespace);
+# set
+$session->id(bin2hex(openssl_random_pseudo_bytes(32)));
+
+# retrieve
+$session->name(); #outputs something like e916b0ff9f8217e52786ee51f2e24..
+```
+
+
+#Removing a specific namespace data
+```php
+$session->clear($namespace, $bool_of_if_exists);
 ```
 
 #Destroying session
