@@ -14,7 +14,7 @@ PHP Session Manager (non-blocking, flash, segment, session encryption). Uses PHP
 $session = Session::start($optional_session_namespace);
 
 # Register Error Handler
-$session->registerErrorHandler(function($error)
+$session->registerErrorHandler(function($error, $error_code)
 {
     # Debug::Log($error)
     # throw new  RuntimeException($error);
