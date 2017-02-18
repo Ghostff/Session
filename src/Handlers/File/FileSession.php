@@ -134,7 +134,7 @@ class FileSession implements \Handlers\SessionInterface
                 $type = 'REMOTE_ADDR';
                 if (isset($_SESSION['__\prefab']['ip']) && ($_SESSION['__\prefab']['ip'] != $_SERVER[$type]))
                 {
-                    $this->newError('Session IP address mismatch');
+                    $this->newError('Session IP address mismatch', 1);
                     return false;
                 }
                 $_SESSION['__\prefab']['ip'] = $_SERVER[$type];
@@ -146,7 +146,7 @@ class FileSession implements \Handlers\SessionInterface
                 $type = 'HTTP_USER_AGENT';
                 if (isset($_SESSION['__\prefab']['browser']) && ($_SESSION['__\prefab']['browser'] != $_SERVER[$type]))
                 {
-                    $this->newError('Session user agent string mismatch');
+                    $this->newError('Session user agent string mismatch', 2);
                     return false;
                 }
                 $_SESSION['__\prefab']['browser'] = $_SERVER[$type];
@@ -155,7 +155,7 @@ class FileSession implements \Handlers\SessionInterface
             # Check if session has expired but still being used
             if (($this->config->expiration !== 0) && ($this->config->expiration < time()))
             {
-                $this->newError('Using expired session');
+                $this->newError('Using expired session', 3);
                 return false;
             }
 
@@ -244,9 +244,9 @@ class FileSession implements \Handlers\SessionInterface
      *
      * @param string $message
      */
-    private function newError(string $message): void
+    private function newError(string $error): void
     {
-        call_user_func_array($this->error_handler, [$message]);
+        call_user_func_array($this->error_handler, [$error, $error_code]);
     }
 
 
