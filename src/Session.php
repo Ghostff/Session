@@ -58,7 +58,7 @@ class Session
         # check if openssl is enabled since SessionHandler class uses openssl to encrypt and decrypt session content
         if ( ! extension_loaded('openssl'))
         {
-            trigger_error("You don't have openssl enabled. So seve handler wont be encrypted.(comment out Session.php line:61 if you cant get openssl enabled and wonna get rid of this error) ", E_USER_NOTICE);
+            trigger_error("You don't have openssl enabled. So seve handler wont be encrypted.(comment out Session.php line:61 if you cant get openssl enabled and wanna get rid of this error)", E_USER_NOTICE);
         }
         else
         {
@@ -75,8 +75,7 @@ class Session
             if (is_dir($save_path))
             {
                 session_save_path($save_path);
-                # For GC in Debian
-                ini_set('session.gc_probability', '1');
+                ini_set('session.gc_probability', $config->gc_probability);
             }
             else
             {

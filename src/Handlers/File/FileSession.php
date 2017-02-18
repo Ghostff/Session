@@ -242,9 +242,10 @@ class FileSession implements \Handlers\SessionInterface
     /**
      * Calls user provide error handler
      *
-     * @param string $message
+     * @param string $error
+     * @param string $error_code
      */
-    private function newError(string $error): void
+    private function newError(string $error, string $error_code): void
     {
         call_user_func_array($this->error_handler, [$error, $error_code]);
     }
