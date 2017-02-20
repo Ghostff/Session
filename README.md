@@ -68,7 +68,7 @@ $segment->remove->flash->name;
 $session->all();
 ```
 
-#Retrieve or set session name
+#Get/Set session name
 ```php
 $session = Session::start($optional_session_namespace);
 # set
@@ -78,7 +78,7 @@ $session->name('foo');
 $session->name(); #outputs foo
 ```
 
-#Retrieve or set session id
+#Get/Set session id
 ```php
 $session = Session::start($optional_session_namespace);
 # set
@@ -99,3 +99,7 @@ $session->clear($namespace, $bool_of_if_exists);
 $session->destroy();
 ```
 
+#Regenerate session ID
+```php
+$session->rotate(true);
+```
