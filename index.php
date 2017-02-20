@@ -18,9 +18,7 @@ else
     });
 
     $segment = $session->segment('hey');
-    $session->flash->flash = 'foobar flash';
     $session->flash->lname = 'foobar flash';
-    $session->flash = 'flash';
     $session->name = 'foobar';
 
     $segment->name = 'foobar segment';
@@ -33,7 +31,7 @@ else
 	$session1->name = 'chrys';
 
 
-	new Dump($session1->all(), $session->flash);
+	new Dump($session1->all());
 }
 ?>
 <form method="post">

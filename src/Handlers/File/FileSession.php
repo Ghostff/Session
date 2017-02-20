@@ -312,6 +312,11 @@ class FileSession implements \Handlers\SessionInterface
      */
     public function __set(string $name, $value): void
     {
+        if (in_array($name, ['flash', 'remove']))
+        {
+            throw new \RuntimeException($name .' is a reserved word amd cant\'t be used to declare as session variable');
+        }
+
         $type = 'static';
         if ($this->flashed)
         {
