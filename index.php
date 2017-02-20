@@ -18,8 +18,9 @@ else
     });
 
     $segment = $session->segment('hey');
-    $session->flash->name = 'foobar flash';
+    $session->flash->flash = 'foobar flash';
     $session->flash->lname = 'foobar flash';
+    $session->flash = 'flash';
     $session->name = 'foobar';
 
     $segment->name = 'foobar segment';
@@ -27,12 +28,12 @@ else
 
     $segment->remove->name;
     $session->remove->flash->lname;
-	
+
 	$session1 = Session::start('Demo1');
 	$session1->name = 'chrys';
 
 
-	new Dump($session1->getAll(), $segment->flash->name, $session->getAll());
+	new Dump($session1->all(), $session->flash);
 }
 ?>
 <form method="post">
