@@ -9,7 +9,7 @@ PHP Session Manager (non-blocking, flash, segment, session encryption). Uses PHP
  - Redis&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: `queued`
 
 
-## Initializing Session *:void*
+## Initializing Session
 ```php
 $session = Session::start($optional_session_namespace);
 
