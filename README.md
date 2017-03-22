@@ -87,7 +87,7 @@ $session = Session::start($optional_session_namespace);
 $session->id(bin2hex(openssl_random_pseudo_bytes(32)));
 
 # retrieve
-$session->name(); #outputs something like e916b0ff9f8217e52786ee51f2e24..
+$session->id(); #outputs something like e916b0ff9f8217e52786ee51f2e24..
 ```
 
 ## Check if variable exist in current session namespace *:bool*
