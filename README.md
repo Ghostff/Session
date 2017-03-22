@@ -1,7 +1,7 @@
 # Session php(7.1)
 PHP Session Manager (non-blocking, flash, segment, session encryption). Uses PHP [open_ssl](http://php.net/manual/en/book.openssl.php) for optional encrypt/decryption of session data.
 
-###Driver support  Scope
+### Driver support  Scope
  - File&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;: `done`
  - Cookie&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: `active`
  - Database&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: `queued`
@@ -9,7 +9,7 @@ PHP Session Manager (non-blocking, flash, segment, session encryption). Uses PHP
  - Redis&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: `queued`
 
 
-#Initializing Session *:void*
+## Initializing Session *:void*
 ```php
 $session = Session::start($optional_session_namespace);
 
@@ -21,12 +21,12 @@ $session->registerErrorHandler(function($error, $error_code)
 });
 ```
 
-#Using Segment *:Segment*
+## Using Segment *:Segment*
 ```php
  $segment = $session->segment($required_segment_name);
 ```
 
-#Setting Session Data
+## Setting Session Data
 ```php
 $session->name = 'foo';
 # Setting Segment
@@ -40,7 +40,7 @@ $segment->flash->name = 'barfoo';
 $session->commit();
 ```
 
-#Retrieving Session Data
+## Retrieving Session Data
 ```php
 echo $session->name; # outputs foo
 # Retrieving Segment
@@ -52,7 +52,7 @@ echo $session->flash->name; # outputs foobar
 echo $segment->flash->name; # outputs barfoo
 ```
 
-#Removing Session Data
+## Removing Session Data
 ```php
 $session->remove->name;
 # Removing Segment
@@ -64,13 +64,13 @@ $session->remove->flash->name;
 $segment->remove->flash->name;
 ```
 
-#Retrieve all session and flash data *:array*
+## Retrieve all session and flash data *:array*
 ```php
 # Array
 $session->all();
 ```
 
-#Get/Set session name *:string*
+## Get/Set session name *:string*
 ```php
 $session = Session::start($optional_session_namespace);
 # set
@@ -80,7 +80,7 @@ $session->name('foo');
 $session->name(); #outputs foo
 ```
 
-#Get/Set session id *:string*
+## Get/Set session id *:string*
 ```php
 $session = Session::start($optional_session_namespace);
 # set
@@ -90,23 +90,23 @@ $session->id(bin2hex(openssl_random_pseudo_bytes(32)));
 $session->name(); #outputs something like e916b0ff9f8217e52786ee51f2e24..
 ```
 
-#Check if variable exist in current session namespace *:bool*
+## Check if variable exist in current session namespace *:bool*
 ```php
 $session->exists($variable_name);
 ```
 
 
-#Removing a specific current namespace data *:void*
+## Removing a specific current namespace data *:void*
 ```php
 $session->clear();
 ```
 
-#Destroying session *:void*
+## Destroying session *:void*
 ```php
 $session->destroy();
 ```
 
-#Regenerate session ID *:void*
+## Regenerate session ID *:void*
 ```php
 $session->rotate(true);
 ```
