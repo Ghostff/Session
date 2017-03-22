@@ -84,7 +84,7 @@ $session->name(); #outputs foo
 ```php
 $session = Session::start($optional_session_namespace);
 # set
-$session->id(bin2hex(openssl_random_pseudo_bytes(32)));
+$session->id(bin2hex(random_bytes(32)));
 
 # retrieve
 $session->id(); #outputs something like e916b0ff9f8217e52786ee51f2e24..
