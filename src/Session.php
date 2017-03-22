@@ -34,6 +34,8 @@
 
 declare(strict_types=1);
 
+namespace Session;
+
 class Session
 {
     public const DS = DIRECTORY_SEPARATOR;
@@ -96,11 +98,11 @@ class Session
         }
         else
         {
-            $namespace = sprintf('Handlers\%s\SessionHandler', ucfirst($config->driver));
+            $namespace = sprintf('Session\Handlers\%s\SessionHandler', ucfirst($config->driver));
             session_set_save_handler(new $namespace($config->salt), true);
         }
 
-        $_namespace = sprintf('Handlers\%1$s\%1$sSession', ucfirst($config->driver));
+        $_namespace = sprintf('Session\Handlers\%1$s\%1$sSession', ucfirst($config->driver));
 
         if (($config->save_path) != false)
         {

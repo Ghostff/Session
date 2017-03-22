@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Handlers;
+namespace Session\Handlers;
 
 class Segment
 {
@@ -10,7 +10,7 @@ class Segment
     private $name = null;
     private $last_flash = false;
 
-    public function __construct(string $name, \Handlers\File\FileSession $session)
+    public function __construct(string $name, \Session\Handlers\File\FileSession $session)
     {
         # prevent overriding of default session data storage pre-defined indexes
         if ($name == '__\raw' || $name == '__\prefab')

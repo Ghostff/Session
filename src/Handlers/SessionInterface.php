@@ -35,7 +35,7 @@
 
 declare(strict_types=1);
 
-namespace Handlers;
+namespace Session\Handlers;
 
 interface SessionInterface
 {

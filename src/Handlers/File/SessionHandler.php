@@ -1,6 +1,6 @@
 <?php
 
-namespace Handlers\File;
+namespace Session\Handlers\File;
 
 
 class SessionHandler extends \SessionHandler

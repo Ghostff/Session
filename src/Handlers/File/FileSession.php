@@ -34,9 +34,9 @@
 
 declare(strict_types=1);
 
-namespace Handlers\File;
+namespace Session\Handlers\File;
 
-class FileSession implements \Handlers\SessionInterface
+class FileSession implements \Session\Handlers\SessionInterface
 {
 
     /**
@@ -394,9 +394,9 @@ class FileSession implements \Handlers\SessionInterface
      * @param string $name
      * @return \Handlers\Segment
      */
-    public function segment(string $name): \Handlers\Segment
+    public function segment(string $name): \Session\Handlers\Segment
     {
-        return new \Handlers\Segment($name, $this);
+        return new \Session\Handlers\Segment($name, $this);
     }
 
     /**
