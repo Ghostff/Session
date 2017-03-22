@@ -96,7 +96,7 @@ $session->exists($variable_name);
 ```
 
 
-## Removing a specific current namespace data *:void*
+## Removing active namespace data *:void*
 ```php
 $session->clear();
 ```
