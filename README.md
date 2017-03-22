@@ -9,7 +9,7 @@ PHP Session Manager (non-blocking, flash, segment, session encryption). Uses PHP
  - Redis&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: `queued`
 
 
-#Initializing Session
+#Initializing Session *:void*
 ```php
 $session = Session::start($optional_session_namespace);
 
@@ -21,7 +21,7 @@ $session->registerErrorHandler(function($error, $error_code)
 });
 ```
 
-#Using Segment
+#Using Segment *:Segment*
 ```php
  $segment = $session->segment($required_segment_name);
 ```
@@ -36,6 +36,8 @@ $segment->name = 'bar';
 $session->flash->name = 'foobar';
 # Setting Segment Flash
 $segment->flash->name = 'barfoo';
+
+$session->commit();
 ```
 
 #Retrieving Session Data
@@ -62,13 +64,13 @@ $session->remove->flash->name;
 $segment->remove->flash->name;
 ```
 
-#Retrieve all session and flash data
+#Retrieve all session and flash data *:array*
 ```php
 # Array
 $session->all();
 ```
 
-#Get/Set session name
+#Get/Set session name *:string*
 ```php
 $session = Session::start($optional_session_namespace);
 # set
@@ -78,7 +80,7 @@ $session->name('foo');
 $session->name(); #outputs foo
 ```
 
-#Get/Set session id
+#Get/Set session id *:string*
 ```php
 $session = Session::start($optional_session_namespace);
 # set
@@ -88,18 +90,23 @@ $session->id(bin2hex(openssl_random_pseudo_bytes(32)));
 $session->name(); #outputs something like e916b0ff9f8217e52786ee51f2e24..
 ```
 
-
-#Removing a specific namespace data
+#Check if variable exist in current session namespace *:bool*
 ```php
-$session->clear($namespace, $bool_of_if_exists);
+$session->exists($variable_name);
 ```
 
-#Destroying session
+
+#Removing a specific current namespace data *:void*
+```php
+$session->clear();
+```
+
+#Destroying session *:void*
 ```php
 $session->destroy();
 ```
 
-#Regenerate session ID
+#Regenerate session ID *:void*
 ```php
 $session->rotate(true);
 ```

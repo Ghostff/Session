@@ -12,26 +12,12 @@ else
 {
     $session = Session::start('Demo');
 
-    $session->registerErrorHandler(function($error)
-    {
-        throw new  RuntimeException('error: ' . $error);
-    });
-
-    $segment = $session->segment('hey');
-    $session->flash->lname = 'foobar flash';
-    $session->name = 'foobar';
-
-    $segment->name = 'foobar segment';
-    $segment->flash->name = 'foobar segment flash';
-
-    $segment->remove->name;
-    $session->remove->flash->lname;
-
-	$session1 = Session::start('Demo1');
-	$session1->name = 'chrys';
+    #$session->remove->name;
 
 
-	new Dump($session1->all());
+
+
+	new Dump($session->all());
 }
 ?>
 <form method="post">

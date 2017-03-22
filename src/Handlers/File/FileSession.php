@@ -104,6 +104,7 @@ class FileSession implements \Handlers\SessionInterface
         $this->name = $name;
         $this->config = $config;
         $this->segmented = '__\raw';
+        $this->init();
     }
 
     /**
@@ -118,7 +119,6 @@ class FileSession implements \Handlers\SessionInterface
         $domain = (($_SERVER[$sp] != '80') && ($_SERVER[$sp] != '443')) ? $_SERVER[$sn] . ':' . $_SERVER[$sp] : $_SERVER[$sn];
         return '.' . str_replace('www.', '', $domain);
     }
-
 
     /**
      * Validates session data static data
@@ -225,17 +225,17 @@ class FileSession implements \Handlers\SessionInterface
      */
     private function sessionType(string $type, string $name, $value): void
     {
-        $this->init();
-        $status = isset($this->session[$this->name][$this->segmented][$type][$name]);
-        # Check that at least one value has been changed before starting up the session
-        if ( ! $status || ($status && ($this->session[$this->name][$this->segmented][$type][$name] != $value)))
-        {
-            # No need suppressing error because there won't be a case of it being open.
-            session_start();
-            $_SESSION[$this->name][$this->segmented][$type][$name] = $value;
-            $this->session = $_SESSION;
-            session_write_close();
-        }
+        $this->session[$this->name][$this->segmented][$type][$name] = $value;
+    }
+
+    /**
+     * pushes data to session file.
+     */
+    public function commit(): void
+    {
+        session_start();
+        $_SESSION = $this->session;
+        session_write_close();
         $this->segmented = '__\raw';
     }
 
@@ -250,14 +250,13 @@ class FileSession implements \Handlers\SessionInterface
         call_user_func_array($this->error_handler, [$error, $error_code]);
     }
 
-
     /**
      * Generate a new session identifier
      *
      * @param bool $delete_old
      * @param bool $write_nd_close
      */
-    public function rotate(bool $delete_old = false, bool $write_nd_close = true)
+    public function rotate(bool $delete_old = false, bool $write_nd_close = true): void
     {
         if (headers_sent($filename, $line_num))
         {
@@ -275,6 +274,23 @@ class FileSession implements \Handlers\SessionInterface
         if ($write_nd_close)
         {
             session_write_close();
+        }
+    }
+
+    /**
+     * @param string $name
+     * @param bool $is_static
+     * @return bool
+     */
+    public function exists(string $name, bool $is_static = true): bool
+    {
+        if ($is_static)
+        {
+            return isset($this->session[$this->name][$this->segmented]['static'][$name]);
+        }
+        else
+        {
+            return isset($this->session[$this->name][$this->segmented]['flash'][$name]);
         }
     }
 
@@ -359,7 +375,14 @@ class FileSession implements \Handlers\SessionInterface
         {
             $this->flashed = false;
             $this->remove = false;
-            unset($this->session[$this->name][$this->segmented][$type][$name]);
+
+            if (session_status() !== PHP_SESSION_ACTIVE)
+            {
+                @session_start();
+            }
+            unset($_SESSION[$this->name][$this->segmented][$type][$name]);
+            $this->session = $_SESSION;
+            session_write_close();
         }
         $this->segmented = '__\raw';
         return $session;
@@ -378,23 +401,17 @@ class FileSession implements \Handlers\SessionInterface
 
     /**
      * Clears all the data is a specific namespace
-     *
-     * @param string $namespace
-     * @param bool $if_exists
      */
-    public function clear(string $namespace, bool $if_exists = false): void
+    public function clear(): void
     {
-        if (isset($this->session[$namespace]))
+        #TODO: Remove args from session clear doc
+        if (session_status() !== PHP_SESSION_ACTIVE)
         {
-            unset($this->session[$namespace]);
+            @session_start();
         }
-        else
-        {
-            if ( ! $if_exists)
-            {
-                throw new \RuntimeException(sprintf('%s does not exists in current session namespace', $namespace));
-            }
-        }
+        unset($_SESSION[$this->name]);
+        $this->session = $_SESSION;
+        session_write_close();
     }
 
     /**
@@ -465,7 +482,6 @@ class FileSession implements \Handlers\SessionInterface
         }
         return $this->session;
     }
-
 
     /**
      * Allows error custom error handling
