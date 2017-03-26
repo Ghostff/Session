@@ -9,6 +9,7 @@ return [
         'rotate'	        => 1800,		        # change session id every 30 min(60 * 30).
         'domain'            => '',                  # Cookie domain. (http://php.net/manual/en/function.session-set-cookie-params.php)
         'http_only'         => true,                # If set to TRUE then PHP will attempt to send the httponly flag when setting the session cookie.
+        'secure'            => null,                # If true cookie will only be sent over secure(https) connections. set to null for auto dictate
         'expiration'        => 0,                   # of idle time after which the session will expire. 0 expires on browser shutdown
 
         'name'		        => '_Bittr_SESSID',	    # Default session name

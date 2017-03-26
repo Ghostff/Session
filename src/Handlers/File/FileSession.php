@@ -36,6 +36,8 @@ declare(strict_types=1);
 
 namespace Session\Handlers\File;
 
+use Psr\Log\InvalidArgumentException;
+
 class FileSession implements \Session\Handlers\SessionInterface
 {
 
@@ -183,7 +185,17 @@ class FileSession implements \Session\Handlers\SessionInterface
             $this->initialized = true;
             session_cache_limiter($this->config->cache_limiter);
 
-            $secured = ( ! empty($_SERVER['HTTPS']) && strtolower($_SERVER['HTTPS'] == 'on'));
+
+            $secured = $this->config->secure;
+            if ($secured == null)
+            {
+                $secured = (( ! empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || ($_SERVER['SERVER_PORT'] == 443));
+            }
+
+            if ($secured !== true && $secured !== false)
+            {
+                throw new InvalidArgumentException('config.secure expected value to be a boolean or null');
+            }
 
             $expire =  ($this->config->expiration == 0) ? 0 : time() + $this->config->expiration;
 
