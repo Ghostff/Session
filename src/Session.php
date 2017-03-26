@@ -46,11 +46,7 @@ class Session
 
     public static function loadConfig(): array
     {
-        if (empty(static::$config))
-        {
-            # check if users specified a custom path else load default config
-            static::$config = include(static::$config_path ?? __DIR__ . self::DS . 'Config.php');
-        }
+        static::$config = include(static::$config_path ?? __DIR__ . self::DS . 'Config.php');
         return static::$config;
     }
 
@@ -59,10 +55,14 @@ class Session
         #check if session name works
         if ((trim($name) != false) && (preg_match('/^[\w]+$/', $name) < 1))
         {
-            throw new InvalidArgumentException('Invalid Session namespace. (allows alphanumrics and underscors)');
+            throw new \InvalidArgumentException('Invalid Session namespace. (allows alphanumerics and underscores)');
         }
 
-        $config = static::loadConfig();
+        if (static::$config === [])
+        {
+            $config = static::loadConfig();
+        }
+
         if (isset($config['driver']))
         {
             $diver = $config['driver'];
@@ -76,48 +76,50 @@ class Session
                 }
                 else
                 {
-                    throw new RuntimeException(sprintf('%s does not exist in Config.php index', $diver));
+                    throw new \RuntimeException(sprintf('%s does not exist in Config.php index', $diver));
                 }
             }
             else
             {
-                throw new RuntimeException(sprintf('No session driver for %s found', $diver));
+                throw new \RuntimeException(sprintf('No session driver for %s found', $diver));
             }
         }
         else
         {
-            throw new RuntimeException('driver does not exist in Config.php index');
+            throw new \RuntimeException('driver does not exist in Config.php index');
         }
 
         #make save handler config dependent
         ini_set('session.save_handler', ($config->driver == 'file') ? 'files' : $config->driver);
         # check if openssl is enabled since SessionHandler class uses openssl to encrypt and decrypt session content
-        if ( ! extension_loaded('openssl'))
+
+        if ($config->salt != null)
         {
-            trigger_error("You don't have openssl enabled. So seve handler wont be encrypted.(comment out Session.php line:61 if you cant get openssl enabled and wanna get rid of this error)", E_USER_NOTICE);
-        }
-        else
-        {
-            $namespace = sprintf('Session\Handlers\%s\SessionHandler', ucfirst($config->driver));
-            session_set_save_handler(new $namespace($config->salt), true);
+            if ( ! extension_loaded('openssl'))
+            {
+                trigger_error("You don't have openssl enabled. So seve handler wont be encrypted.(comment out Session.php line:61 if you cant get openssl enabled and wanna get rid of this error)", E_USER_NOTICE);
+            }
+            else
+            {
+                $namespace = sprintf('Session\Handlers\%s\SessionHandler', ucfirst($config->driver));
+                session_set_save_handler(new $namespace($config->salt), true);
+            }
         }
 
         $_namespace = sprintf('Session\Handlers\%1$s\%1$sSession', ucfirst($config->driver));
 
-        if (($config->save_path) != false)
+        #check if user has a custom save path for session cookies
+        if ($config->save_path != null)
         {
-            #check if user has a custom save path for session cookies
-            $save_path = ($config->save_path == 'Temp/') ? __DIR__ . self::DS . 'Temp' . self::DS : $config->save_path;
-            if (is_dir($save_path))
+            $path = __DIR__ . $config->save_path;
+            if ( ! is_readable($path))
             {
-                session_save_path($save_path);
-                ini_set('session.gc_probability', $config->gc_probability);
+                throw new \RuntimeException(sprintf('Path %s does not exist', $path));
             }
-            else
-            {
-               throw new RuntimeException(sprintf('Path %s does not exist', $save_path));
-            }
+            session_save_path(__DIR__ . $config->save_path);
         }
+
+        ini_set('session.gc_probability', $config->gc_probability);
         return new $_namespace($name, $config);
 
     }

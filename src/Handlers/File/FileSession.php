@@ -108,19 +108,6 @@ class FileSession implements \Session\Handlers\SessionInterface
     }
 
     /**
-     * Get the domain name
-     *
-     * @return string
-     */
-    private function getDomain(): string
-    {
-        $sp = 'SERVER_PORT';
-        $sn = 'SERVER_NAME';
-        $domain = (($_SERVER[$sp] != '80') && ($_SERVER[$sp] != '443')) ? $_SERVER[$sn] . ':' . $_SERVER[$sp] : $_SERVER[$sn];
-        return '.' . str_replace('www.', '', $domain);
-    }
-
-    /**
      * Validates session data static data
      * @return bool
      */
@@ -199,14 +186,16 @@ class FileSession implements \Session\Handlers\SessionInterface
             $secured = ( ! empty($_SERVER['HTTPS']) && strtolower($_SERVER['HTTPS'] == 'on'));
 
             $expire =  ($this->config->expiration == 0) ? 0 : time() + $this->config->expiration;
-            session_set_cookie_params($expire, $this->config->path, $this->getDomain(), $secured, $this->config->http_only);
+
+            session_set_cookie_params($expire, $this->config->path, $this->config->domain, $secured, $this->config->http_only);
 
             if (isset($this->config->name))
             {
                 session_name($this->config->name);
             }
+
             session_start();
-            setcookie(session_name(), session_id(), $expire, $this->config->path, $this->getDomain(), $secured, $this->config->http_only);
+            setcookie($this->config->name, session_id(), $expire, $this->config->path, $this->config->domain, $secured, $this->config->http_only);
             # store current session ID
             $this->sess_id = session_id();
             $this->checkSession();
@@ -227,7 +216,6 @@ class FileSession implements \Session\Handlers\SessionInterface
     {
         $this->session[$this->name][$this->segmented][$type][$name] = $value;
     }
-
     /**
      * pushes data to session file.
      */
@@ -243,9 +231,9 @@ class FileSession implements \Session\Handlers\SessionInterface
      * Calls user provide error handler
      *
      * @param string $error
-     * @param string $error_code
+     * @param int $error_code
      */
-    private function newError(string $error, string $error_code): void
+    private function newError(string $error, int $error_code): void
     {
         call_user_func_array($this->error_handler, [$error, $error_code]);
     }
@@ -392,7 +380,7 @@ class FileSession implements \Session\Handlers\SessionInterface
      * Sub categorize session datas
      *
      * @param string $name
-     * @return \Handlers\Segment
+     * @return \Session\Handlers\Segment
      */
     public function segment(string $name): \Session\Handlers\Segment
     {
@@ -422,9 +410,11 @@ class FileSession implements \Session\Handlers\SessionInterface
         @session_start();
         # Empty out session
         $_SESSION = [];
-        $params = session_get_cookie_params();
-        setcookie(session_name(), '', time() - 42000, $params["path"], $params["domain"], $params["secure"], $params["httponly"]);
         session_destroy();
+        session_write_close();
+
+        $params = session_get_cookie_params();
+        setcookie($this->config->name, '', -1, $params["path"], $params["domain"], $params["secure"], $params["httponly"]);
 
         # Reset the session data
         $this->initialized = false;
