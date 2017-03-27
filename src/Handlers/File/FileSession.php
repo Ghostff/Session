@@ -367,7 +367,6 @@ class FileSession implements \Session\Handlers\SessionInterface
             $type = 'flash';
         }
 
-        $this->init();
         # buffer session
         $session = $this->session[$this->name][$this->segmented][$type][$name] ?? null;
         # Remove flash from session

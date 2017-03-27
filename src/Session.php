@@ -58,10 +58,7 @@ class Session
             throw new \InvalidArgumentException('Invalid Session namespace. (allows alphanumerics and underscores)');
         }
 
-        if (static::$config === [])
-        {
-            $config = static::loadConfig();
-        }
+        $config = (static::$config !== []) ? static::$config : static::loadConfig();
 
         if (isset($config['driver']))
         {
