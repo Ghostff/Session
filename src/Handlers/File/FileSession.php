@@ -479,7 +479,7 @@ class FileSession implements \Session\Handlers\SessionInterface
             {
                 throw new \RuntimeException(sprintf('%s does not exists in current session namespace', $name));
             }
-            return $this->session[$name];
+            return $this->session[$name] ?? [];
         }
         return $this->session;
     }
