@@ -1,4 +1,4 @@
-# Session php(7.1)
+# Session PHP(7+)
 PHP Session Manager (non-blocking, flash, segment, session encryption). Uses PHP [open_ssl](http://php.net/manual/en/book.openssl.php) for optional encrypt/decryption of session data.
 
 ### Driver support  Scope
@@ -15,7 +15,7 @@ Session::registerErrorHandler(function($error, $error_code)
 
 $session = Session::start($optional_session_namespace);
 ```
-## Setting session id *:string*
+## Setting session id *:void*
 ```php
 Session::id(bin2hex(random_bytes(32)));
 
