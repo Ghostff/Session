@@ -2,23 +2,24 @@
 PHP Session Manager (non-blocking, flash, segment, session encryption). Uses PHP [open_ssl](http://php.net/manual/en/book.openssl.php) for optional encrypt/decryption of session data.
 
 ### Driver support  Scope
- - File&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;: `done`
- - Cookie&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: `active`
- - Database&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: `queued`
- - Memcached&nbsp;&nbsp;: `queued`
- - Redis&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: `queued`
-
+![File](https://img.shields.io/badge/FILE-completed-blue.svg?style=flat-square)&nbsp;&nbsp;&nbsp;![File](https://img.shields.io/badge/COOKIE-completed-blue.svg?style=flat-square)&nbsp;&nbsp;&nbsp;![File](https://img.shields.io/badge/SQL-completed-blue.svg?style=flat-square)&nbsp;&nbsp;&nbsp;![File](https://img.shields.io/badge/MEMCACHE-active-brightgreen.svg?style=flat-square)&nbsp;&nbsp;&nbsp;![File](https://img.shields.io/badge/REDIS-queued-lightgray.svg?style=flat-square)&nbsp;&nbsp;&nbsp;
 
 ## Initializing Session
 ```php
-$session = Session::start($optional_session_namespace);
-
 # Register Error Handler
-$session->registerErrorHandler(function($error, $error_code)
+Session::registerErrorHandler(function($error, $error_code)
 {
     # Debug::Log($error)
     # throw new  RuntimeException($error);
 });
+
+$session = Session::start($optional_session_namespace);
+```
+## Setting session id *:string*
+```php
+Session::id(bin2hex(random_bytes(32)));
+
+$session = Session::start($optional_session_namespace);
 ```
 
 ## Using Segment *:Segment*
@@ -64,41 +65,20 @@ $session->remove->flash->name;
 $segment->remove->flash->name;
 ```
 
-## Retrieve all session and flash data *:array*
+## Retrieve all session or segment data *:array*
 ```php
-# Array
-$session->all();
-```
-
-## Get/Set session name *:string*
-```php
-$session = Session::start($optional_session_namespace);
-# set
-$session->name('foo');
-
-# retrieve
-$session->name(); #outputs foo
-```
-
-## Get/Set session id *:string*
-```php
-$session = Session::start($optional_session_namespace);
-# set
-$session->id(bin2hex(random_bytes(32)));
-
-# retrieve
-$session->id(); #outputs something like e916b0ff9f8217e52786ee51f2e24..
+$session->all($optional_segment);
 ```
 
 ## Check if variable exist in current session namespace *:bool*
 ```php
-$session->exists($variable_name);
+$session->exists($variable_name, $in_flash);
 ```
 
 
-## Removing active namespace data *:void*
+## Removing active session or segment data *:void*
 ```php
-$session->clear();
+$session->clear($optional_segment);
 ```
 
 ## Destroying session *:void*
