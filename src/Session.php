@@ -81,7 +81,7 @@ class Session
             $secured = ( ! empty($_SERVER['HTTPS']) && strtolower($_SERVER['HTTPS'] == 'on'));
         }
 
-        ini_set('session.use_cookies', 1);
+        ini_set('session.use_cookies', '1');
         $expire =  ($config['expiration'] == 0) ? 0 : time() + $config['expiration'];
         session_set_cookie_params($expire, $config['path'], $config['domain'], $secured, $config['http_only']);
 
@@ -96,7 +96,7 @@ class Session
             }
             else
             {
-                throw new RuntimeException(sprintf('Path %s does not exist', $save_path));
+                throw new RuntimeException(sprintf('save_path (%s) does not exist', $save_path));
             }
         }
 
@@ -116,7 +116,7 @@ class Session
         {
             self::init();
         }
-        
+
         if (self::$started)
         {
             throw new \RuntimeException('Session is active. The session id must be set before Session::start().');
@@ -166,7 +166,7 @@ class Session
         self::$initialized = [];
         return new self;
     }
-    
+
     /**
      * Allows error custom error handling
      *
@@ -178,7 +178,7 @@ class Session
         {
             self::init();
         }
-        
+
         self::$initialized['error_handler'] = $error_handler;
     }
 
@@ -186,7 +186,6 @@ class Session
      * decrypt AES 256
      *
      * @param string $data
-     * @param string $password
      * @return string data
      */
     public static function decrypt(string $data): string
@@ -222,7 +221,6 @@ class Session
      * crypt AES 256
      *
      * @param string $data
-     * @param string $password
      * @return string encrypted data
      */
     public static function encrypt(string $data): string
