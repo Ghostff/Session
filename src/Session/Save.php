@@ -88,7 +88,24 @@ class Save
             }
             $this->config->session['_validate:browser'] = $browser;
         }
-
+        
+        if ($this->config->rotate > 0)
+        {
+            $time = time();
+            if (isset($this->config->session['_validate:time']))
+            {
+                new \Dump($time - $this->config->session['_validate:time'], $this->config->rotate);
+                if (($time - $this->config->session['_validate:time']) >= $this->config->rotate)
+                {
+                    $this->rotate(true);
+                    $this->config->session['_validate:time'] = $time;
+                }
+            }
+            else
+            {
+                $this->config->session['_validate:time'] = $time;
+            }
+        }
 
         return true;
     }
@@ -112,6 +129,7 @@ class Save
      */
     private function init()
     {
+        
         if (trim($this->config->name) != '')
         {
             session_name($this->config->name);
@@ -285,11 +303,7 @@ class Save
             throw new \RuntimeException(sprintf('ID must be regenerated before any output is sent to the browser. (file: %s, line: %s)', $filename, $line_num));
         }
 
-        if (session_status() !== PHP_SESSION_ACTIVE)
-        {
-            session_start();
-        }
-
+        session_start();
         session_regenerate_id($delete_old);
         $this->config->sess_id = session_id();
         if ($write_nd_close)

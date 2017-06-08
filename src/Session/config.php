@@ -46,7 +46,7 @@ return [
 
     #referre to: http://php.net/manual/en/function.setcookie.php
     'path'          => '/',                 # Change if you want the cookie to be only valid to a certain path. default is global
-    'rotate'        => 0,                   # Regenerates id every 0 = (never unless explicitly called with rotate).
+    'rotate'        => 30,                  # Regenerates id every 0 = (never unless explicitly called with rotate).
     'domain'        => '',                  # The domain for which the session cookies are valid
     'http_only'     => true,                # Allow all cookie transaction over HTTP. prevents Javascript cookie modification.
     'secure'        => null,                # If set to true, cookies are transmitted over HTTPS. null = auto dictate
