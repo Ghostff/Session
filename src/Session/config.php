@@ -39,24 +39,28 @@
 
 return [
 
-    'driver'        => 'memcached',         # Name of session driver to use: [file|sql|cookie|redis|memcache]
+    'driver'        => 'sql',              # Name of session driver to use: [file|sql|cookie|redis|memcache]
+    'name'          => '_Bittr_SESSID',     # session name
+    'save_path'     => __DIR__ . '/tmp',    # Path where your session files will be store. Ineffective if driver is not file
+    'cache_limiter' => 'none',              # http://php.net/manual/en/function.session-cache-limiter.php
 
+    #[security]
     'encrypt_data'  => false,               # Allow encryption of session data.
     'key'           => 'secret_salt_key',   # Encryption key. ineffective if 'encrypt_data' = false
+    'match_ip'      => false,               # If set to true, IP address will be stored and validated on each I/O.
+    'match_browser' => false,               # If set to true, browser will be stored and validated on each I/O.
+    'http_only'     => true,                # Allow all cookie transaction over HTTP. prevents Javascript cookie modification.
 
-    #referre to: http://php.net/manual/en/function.setcookie.php
+    #[cookies]
     'path'          => '/',                 # Change if you want the cookie to be only valid to a certain path. default is global
     'rotate'        => 0,                   # Regenerates id every 0 = (never unless explicitly called with rotate).
     'domain'        => '',                  # The domain for which the session cookies are valid
-    'http_only'     => true,                # Allow all cookie transaction over HTTP. prevents Javascript cookie modification.
     'secure'        => null,                # If set to true, cookies are transmitted over HTTPS. null = auto dictate
     'expiration'    => 0,                   # Number of seconds of after which the session will expire. 0 = after browser closes
 
-    'name'          => '_Bittr_SESSID',     # session name
-    'match_ip'      => false,               # If set to true, IP address will be stored and validated on each I/O.
-    'match_browser' => false,               # If set to true, browser will be stored and validated on each I/O.
-    'save_path'     => __DIR__ . '/Tmp',    # Path where your session files will be store. Ineffective if driver is not file
-    'cache_limiter' => 'none',              # http://php.net/manual/en/function.session-cache-limiter.php
+    #[garage collection]
+    'max_life_time' => '1440',
+    'probability'   => '1',
 
     #[sql driver]
     'sql'           => [
@@ -70,13 +74,12 @@ return [
     ],
     
     #[memcached driver]
-    'memcached'      => [
-        'host'       => ['127.0.0.1'],
-        'port'       => [11211],
-        'timeout'    => 1,
-        'persistent' => true,
-        'compression'=> true
-        
+    'memcached'     => [
+        'servers'   => [
+            ['127.0.0.1', 11211, 1]
+        ],
+        'compress'  => true,
+        'persistent_conn' => false,
     ]
 
 

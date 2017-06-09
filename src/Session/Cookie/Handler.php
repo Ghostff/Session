@@ -57,7 +57,7 @@ class Handler implements \SessionHandlerInterface
 
     public function read($id): string
     {
-        if (isset($_COOKIE[$id]) === false)
+        if (isset($_COOKIE[$id]) === false || $_COOKIE[$id] == '')
         {
             return '';
         }

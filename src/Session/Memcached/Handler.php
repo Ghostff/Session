@@ -41,7 +41,7 @@
 declare(strict_types=1);
 
 namespace Session\Memcached;
-use Session;
+use Session, Memcached;
 
 
 class Handler implements \SessionHandlerInterface
@@ -50,7 +50,7 @@ class Handler implements \SessionHandlerInterface
 
     private $conn = null;
 
-    private $table = null;
+    private $expire = 0;
 
     public function __construct(array $config)
     {
@@ -60,8 +60,18 @@ class Handler implements \SessionHandlerInterface
         }
 
         $config = $config['memcached'];
-        $this->conn = new Memcache;
-        $this->conn->connect($config['host'], $config['port'], $config['timeout']);
+        $this->expire = $config['expiration'];
+
+        $conn = new Memcache(($config['persistent_conn']) ? $config['name'] : null);
+        $conn->setOptions([Memcached::OPT_LIBKETAMA_COMPATIBLE => true, Memcached::OPT_COMPRESSION => $config['compress']]);
+
+        if ( ! count($conn->getServerList()))
+        {
+            $conn->addServers($config['servers']);
+        }
+
+        $this->conn = $conn;
+        $conn = null;
     }
 
     public function open($savePath, $sessionName): bool
@@ -76,17 +86,18 @@ class Handler implements \SessionHandlerInterface
 
     public function read($id): string
     {
-        return Session::decrypt($this->conn->get($id));
+        $data = $this->conn->get('sess_' . $id);
+        return ($data == '' || $data == false) ? '' : Session::decrypt($data);
     }
 
     public function write($id, $data): bool
     {
-        return $this->conn->set($id, Session::encrypt($data), MEMCACHE_COMPRESSED);
+        return $this->conn->set('sess_' . $id, Session::encrypt($data), $this->expire);
     }
 
     public function destroy($id): bool
     {
-        return $this->conn->delete($id);
+        return $this->conn->delete('sess_' . $id);
     }
 
     public function gc($max_life_time): bool

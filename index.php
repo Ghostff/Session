@@ -17,14 +17,7 @@ Session::registerErrorHandler(function($error, $error_code)
 
 
 $session = Session::start();
-session_start();
-$_SESSION['name'] = 'chrys';
 
-
-
-
-
-exit;
 $session->name = 'chrys';
 $session->flash->name = 'ugwu';
 

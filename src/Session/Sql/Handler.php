@@ -46,7 +46,6 @@ use PDO, Session;
 
 class Handler implements \SessionHandlerInterface
 {
-    private $config = [];
 
     private $conn = null;
 
@@ -109,7 +108,7 @@ class Handler implements \SessionHandlerInterface
         }
         #close
         $statement = null;
-        return Session::decrypt($data);
+        return ($data == '') ? '' : Session::decrypt($data);
     }
 
     public function write($id, $data): bool

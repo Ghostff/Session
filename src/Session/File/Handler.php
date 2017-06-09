@@ -63,7 +63,7 @@ class Handler implements \SessionHandlerInterface
     public function read($id): string
     {
         $data = (string) @file_get_contents($this->savePath . '/sess_' . $id);
-        return Session::decrypt($data);
+        return ($data == '') ? '' : Session::decrypt($data);
     }
 
     public function write($id, $data): bool

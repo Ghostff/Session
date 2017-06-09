@@ -64,10 +64,16 @@ class Session
         {
             throw new RuntimeException('No driver found for ' . self::$class);
         }
+
         elseif (self::$initialized['encrypt_data'] === true && ! extension_loaded('openssl'))
         {
             self::$ssl_enabled = false;
-            trigger_error("You don't have openssl enabled. So session data wont be encrypted.", E_USER_NOTICE);
+            trigger_error('You don\'t have openssl enabled. So session data wont be encrypted.', E_USER_NOTICE);
+        }
+
+        if (self::$class == 'Memcached' && ! extension_loaded('Memcached'))
+        {
+            throw new \RuntimeException('You don\'t have Memcached enabled.');
         }
 
         session_cache_limiter($config['cache_limiter']);
@@ -82,8 +88,9 @@ class Session
         }
 
         ini_set('session.use_cookies', '1');
-        $expire =  ($config['expiration'] == 0) ? 0 : time() + $config['expiration'];
-        session_set_cookie_params($expire, $config['path'], $config['domain'], $secured, $config['http_only']);
+        $current = $config['expiration'];
+        $config['expiration'] = ($current == 0) ? 0 : time() + $current;
+        session_set_cookie_params($config['expiration'], $config['path'], $config['domain'], $secured, $config['http_only']);
 
         $save_path = $config['save_path'];
         if (trim($save_path) !== '')
@@ -91,8 +98,8 @@ class Session
             if (is_dir($save_path))
             {
                 session_save_path($save_path);
-                # For GC in Debian
-                ini_set('session.gc_probability', '1');
+                ini_set('session.gc_maxlifetime', $config['max_life_time']);
+                ini_set('session.gc_probability', $config['probability']);
             }
             else
             {
