@@ -121,7 +121,7 @@ class Session
         {
             throw new \RuntimeException('Session is active. The session id must be set before Session::start().');
         }
-        elseif (strlen($id) > 500)
+        elseif (strlen($id) > 250)
         {
             throw new \RuntimeException('Session id cant be above 500 characters long');
         }

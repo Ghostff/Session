@@ -39,14 +39,14 @@
 
 return [
 
-    'driver'        => 'file',              # Name of session driver to use: [file|sql|cookie|redis|memcache]
+    'driver'        => 'memcached',         # Name of session driver to use: [file|sql|cookie|redis|memcache]
 
     'encrypt_data'  => false,               # Allow encryption of session data.
     'key'           => 'secret_salt_key',   # Encryption key. ineffective if 'encrypt_data' = false
 
     #referre to: http://php.net/manual/en/function.setcookie.php
     'path'          => '/',                 # Change if you want the cookie to be only valid to a certain path. default is global
-    'rotate'        => 30,                  # Regenerates id every 0 = (never unless explicitly called with rotate).
+    'rotate'        => 0,                   # Regenerates id every 0 = (never unless explicitly called with rotate).
     'domain'        => '',                  # The domain for which the session cookies are valid
     'http_only'     => true,                # Allow all cookie transaction over HTTP. prevents Javascript cookie modification.
     'secure'        => null,                # If set to true, cookies are transmitted over HTTPS. null = auto dictate
@@ -58,6 +58,7 @@ return [
     'save_path'     => __DIR__ . '/Tmp',    # Path where your session files will be store. Ineffective if driver is not file
     'cache_limiter' => 'none',              # http://php.net/manual/en/function.session-cache-limiter.php
 
+    #[sql driver]
     'sql'           => [
         'driver'    => 'mysql',             # Database driver
         'host'      => '127.0.0.1',         # Database host
@@ -66,6 +67,16 @@ return [
         'db_user'   => 'root',              # Database username
         'db_pass'   => '',                  # Database password
         'persistent_conn'=> false,          # Avoid the overhead of establishing a new connection every time a script needs to talk to a database, resulting in a faster web application. FIND THE BACKSIDE YOURSELF
+    ],
+    
+    #[memcached driver]
+    'memcached'      => [
+        'host'       => ['127.0.0.1'],
+        'port'       => [11211],
+        'timeout'    => 1,
+        'persistent' => true,
+        'compression'=> true
+        
     ]
 
 

@@ -94,7 +94,6 @@ class Save
             $time = time();
             if (isset($this->config->session['_validate:time']))
             {
-                new \Dump($time - $this->config->session['_validate:time'], $this->config->rotate);
                 if (($time - $this->config->session['_validate:time']) >= $this->config->rotate)
                 {
                     $this->rotate(true);

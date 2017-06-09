@@ -51,6 +51,8 @@ class Handler implements \SessionHandlerInterface
     private $conn = null;
 
     private $table = null;
+    
+    private $persistent = false;
 
     public function __construct(array $config)
     {
@@ -59,45 +61,40 @@ class Handler implements \SessionHandlerInterface
             throw new \RuntimeException('No sql configuration found in config file.');
         }
 
-        $this->config = $config['sql'];
-        $this->table = $config['table'] ?? 'session';
-    }
+        $config = $config['sql'];
+        $table = $config['table'] ?? 'session';
+        $this->table = $table;
+        $this->persistent = $config['persistent_conn'];
+        
+        $dsn = $config['driver'] . ':host=' . $config['host'] . ';dbname=' . $config['db_name'];
 
-    public function open($savePath, $sessionName)
-    {
-        $dsn = $this->config['driver'] . ':host=' . $this->config['host'] . ';dbname=' .$this->config['db_name'];
-        $user = $this->config['db_user'];
-        $pass = $this->config['db_pass'];
-
-        $this->conn = new PDO($dsn, $user, $pass, [
-            PDO::ATTR_PERSISTENT => $this->config['persistent_conn'],
+        $this->conn = new PDO($dsn,  $config['db_user'], $config['db_pass'], [
+            PDO::ATTR_PERSISTENT => $this->persistent,
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
         ]);
 
         try
         {
-            $this->conn->query('SELECT 1 FROM ' . $this->table . ' LIMIT 1');
+            $this->conn->query('SELECT 1 FROM ' . $table . ' LIMIT 1');
         }
         catch (\PDOException  $e)
         {
-            $this->conn->query('CREATE TABLE `' . $this->table . '` (
-              `id` varchar(500) NOT NULL,
+            $this->conn->query('CREATE TABLE `' . $table . '` (
+              `id` varchar(250) NOT NULL,
               `data` text NOT NULL,
               `time` int(11) unsigned NOT NULL,
               PRIMARY KEY (`id`)
             ) ENGINE=InnoDB DEFAULT CHARSET=latin1;');
         }
+    }
 
-
+    public function open($savePath, $sessionName): bool
+    {
         return true;
     }
 
     public function close(): bool
     {
-        if ( ! $this->config['persistent_conn'])
-        {
-            $this->conn = null;
-        }
         return true;
     }
 

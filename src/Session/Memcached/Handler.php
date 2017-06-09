@@ -37,21 +37,35 @@
  *
  */
 
+
 declare(strict_types=1);
 
-
-namespace Session\File;
+namespace Session\Memcached;
 use Session;
 
 
 class Handler implements \SessionHandlerInterface
 {
+    private $config = [];
 
-    private $savePath;
+    private $conn = null;
+
+    private $table = null;
+
+    public function __construct(array $config)
+    {
+        if ( ! isset($config['memcached']))
+        {
+            throw new \RuntimeException('No memcached configuration found in config file.');
+        }
+
+        $config = $config['memcached'];
+        $this->conn = new Memcache;
+        $this->conn->connect($config['host'], $config['port'], $config['timeout']);
+    }
 
     public function open($savePath, $sessionName): bool
     {
-        $this->savePath = $savePath;
         return true;
     }
 
@@ -62,37 +76,20 @@ class Handler implements \SessionHandlerInterface
 
     public function read($id): string
     {
-        $data = (string) @file_get_contents($this->savePath . '/sess_' . $id);
-        return Session::decrypt($data);
+        return Session::decrypt($this->conn->get($id));
     }
 
     public function write($id, $data): bool
     {
-        return (file_put_contents($this->savePath . '/sess_' . $id, Session::encrypt($data)) !== false);
+        return $this->conn->set($id, Session::encrypt($data), MEMCACHE_COMPRESSED);
     }
 
     public function destroy($id): bool
     {
-        $file = $this->savePath . '/sess_' . $id;
-        if (file_exists($file))
-        {
-            unlink($file);
-        }
-
-        return true;
+        return $this->conn->delete($id);
     }
 
     public function gc($max_life_time): bool
     {
-        $time = time();
-        foreach (glob($this->savePath . '/sess_*') as $file)
-        {
-            if (filemtime($file) + $max_life_time < $time && file_exists($file))
-            {
-                unlink($file);
-            }
-        }
-
-        return true;
     }
 }
