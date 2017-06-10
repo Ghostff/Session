@@ -61,48 +61,48 @@ class Save
     private function checkSession(): bool
     {
 
-        if ($this->config->match_ip)
+        if ($this->config['match_ip'])
         {
             $ip = $this->ip();
-            if (isset($this->config->session['_validate:ip']))
+            if (isset($this->config['session']['_validate:ip']))
             {
-                if ($this->config->session['_validate:ip'] != $ip)
+                if ($this->config['session']['_validate:ip'] != $ip)
                 {
                     $this->error('Session IP address mismatch', 1);
                     return false;
                 }
             }
-            $this->config->session['_validate:ip'] = $ip;
+            $this->config['session']['_validate:ip'] = $ip;
         }
 
-        if ($this->config->match_browser)
+        if ($this->config['match_browser'])
         {
             $browser = $this->browser();
-            if (isset($this->config->session['_validate:browser']))
+            if (isset($this->config['session']['_validate:browser']))
             {
-                if ($this->config->session['_validate:browser'] != $browser)
+                if ($this->config['session']['_validate:browser'] != $browser)
                 {
                     $this->error('Session user agent string mismatch', 2);
                     return false;
                 }
             }
-            $this->config->session['_validate:browser'] = $browser;
+            $this->config['session']['_validate:browser'] = $browser;
         }
         
-        if ($this->config->rotate > 0)
+        if ($this->config['rotate'] > 0)
         {
             $time = time();
-            if (isset($this->config->session['_validate:time']))
+            if (isset($this->config['session']['_validate:time']))
             {
-                if (($time - $this->config->session['_validate:time']) >= $this->config->rotate)
+                if (($time - $this->config['session']['_validate:time']) >= $this->config['rotate'])
                 {
                     $this->rotate(true);
-                    $this->config->session['_validate:time'] = $time;
+                    $this->config['session']['_validate:time'] = $time;
                 }
             }
             else
             {
-                $this->config->session['_validate:time'] = $time;
+                $this->config['session']['_validate:time'] = $time;
             }
         }
 
@@ -117,9 +117,9 @@ class Save
      */
     private function error(string $error, int $error_code): void
     {
-        if (isset($this->config->error_handler))
+        if (isset($this->config['error_handler']))
         {
-            call_user_func_array($this->config->error_handler, [$error, $error_code]);
+            call_user_func_array($this->config['error_handler'], [$error, $error_code]);
         }
     }
 
@@ -129,21 +129,21 @@ class Save
     private function init()
     {
         
-        if (trim($this->config->name) != '')
+        if (trim($this->config['name']) != '')
         {
-            session_name($this->config->name);
+            session_name($this->config['name']);
         }
 
         session_start();
 
         # store current session ID
-        $this->config->sess_id = session_id();
+        $this->config['sess_id'] = session_id();
 
         $_ = session_get_cookie_params();
-        setcookie($this->config->name, $this->config->sess_id, $_['lifetime'], $_['path'], $_['domain'], $_['secure'], $_['httponly']);
-        $this->config->session_params = $_;
+        setcookie($this->config['name'], $this->config['sess_id'], $_['lifetime'], $_['path'], $_['domain'], $_['secure'], $_['httponly']);
+        $this->config['session_params'] = $_;
 
-        $this->config->session = $_SESSION;
+        $this->config['session'] = $_SESSION;
         # Remove the lock from the session file
         session_write_close();
 
@@ -161,11 +161,11 @@ class Save
      * Save constructor.
      * @param \stdClass $config
      */
-    public function __construct(\stdClass $config)
+    public function __construct(array $config)
     {
         $this->config = $config;
-        $this->config->last = 'set';
-        $this->config->segment = 'segment:static';
+        $this->config['last'] = 'set';
+        $this->config['segment'] = 'segment:static';
         $this->init();
     }
 
@@ -177,11 +177,11 @@ class Save
      */
     public function __set(string $name, $value)
     {
-        $last = $this->config->last;
-        $namespace = $this->config->namespace;
-        $segment = $this->config->segment;
-        $this->config->segment = 'segment:static';
-        $this->config->last = 'set';
+        $last = $this->config['last'];
+        $namespace = $this->config['namespace'];
+        $segment = $this->config['segment'];
+        $this->config['segment'] = 'segment:static';
+        $this->config['last'] = 'set';
 
         if ($last == 'remove')
         {
@@ -189,7 +189,7 @@ class Save
         }
         else
         {
-            $this->config->session[$namespace][$segment][$last][$name] = $value;
+            $this->config['session'][$namespace][$segment][$last][$name] = $value;
         }
     }
 
@@ -203,38 +203,38 @@ class Save
     {
         if (in_array($name, ['flash', 'remove']))
         {
-            $this->config->last = $name;
+            $this->config['last'] = $name;
             return $this;
         }
         else
         {
-            $last = $this->config->last;
-            $namespace = $this->config->namespace;
-            $segment = $this->config->segment;
-            $this->config->segment = 'segment:static';
-            $this->config->last = 'set';
+            $last = $this->config['last'];
+            $namespace = $this->config['namespace'];
+            $segment = $this->config['segment'];
+            $this->config['segment'] = 'segment:static';
+            $this->config['last'] = 'set';
 
             $_last = ($last == 'remove') ? 'set' : $last;
-            if ( ! isset($this->config->session[$namespace][$segment][$_last][$name]))
+            if ( ! isset($this->config['session'][$namespace][$segment][$_last][$name]))
             {
                 throw new \RuntimeException($name . ' does not exist. or has been removed');
             }
 
             if ($last == 'set')
             {
-                return $this->config->session[$namespace][$segment][$last][$name];
+                return $this->config['session'][$namespace][$segment][$last][$name];
             }
             elseif ($last == 'flash')
             {
-                $value = $this->config->session[$namespace][$segment][$last][$name];
-                unset($this->config->session[$namespace][$segment][$last][$name]);
+                $value = $this->config['session'][$namespace][$segment][$last][$name];
+                unset($this->config['session'][$namespace][$segment][$last][$name]);
                 return $value;
             }
             if ($last == 'remove')
             {
-                if (isset($this->config->session[$namespace][$segment]['set'][$name]))
+                if (isset($this->config['session'][$namespace][$segment]['set'][$name]))
                 {
-                    unset($this->config->session[$namespace][$segment]['set'][$name]);
+                    unset($this->config['session'][$namespace][$segment]['set'][$name]);
                 }
                 return $this;
             }
@@ -249,17 +249,17 @@ class Save
      */
     public function all(string $segment = ''): array
     {
-        $namespace = $this->config->namespace;
+        $namespace = $this->config['namespace'];
         if ($segment == '')
         {
-            return $this->config->session[$namespace] ?? [];
+            return $this->config['session'][$namespace] ?? [];
         }
         else
         {
             $_segment = 'segment:' . $segment;
-            if (isset($this->config->session[$namespace][$_segment]))
+            if (isset($this->config['session'][$namespace][$_segment]))
             {
-                return $this->config->session[$namespace][$_segment];
+                return $this->config['session'][$namespace][$_segment];
             }
             else
             {
@@ -285,7 +285,7 @@ class Save
     public function commit()
     {
         session_start();
-        $_SESSION = $this->config->session;
+        $_SESSION = $this->config['session'];
         session_write_close();
     }
 
@@ -304,7 +304,7 @@ class Save
 
         session_start();
         session_regenerate_id($delete_old);
-        $this->config->sess_id = session_id();
+        $this->config['sess_id'] = session_id();
         if ($write_nd_close)
         {
             session_write_close();
@@ -317,13 +317,13 @@ class Save
      */
     public function clear(string $segment = '')
     {
-        $namespace = $this->config->namespace;
+        $namespace = $this->config['namespace'];
         if ($segment !== '')
         {
             $segment = 'segment:' . $segment;
-            if (isset($this->config->session[$namespace][$segment]))
+            if (isset($this->config['session'][$namespace][$segment]))
             {
-                unset($this->config->session[$namespace][$segment]);
+                unset($this->config['session'][$namespace][$segment]);
             }
             else
             {
@@ -332,13 +332,13 @@ class Save
         }
         else
         {
-            if (isset($this->config->session[$namespace]))
+            if (isset($this->config['session'][$namespace]))
             {
-                unset($this->config->session[$namespace]);
+                unset($this->config['session'][$namespace]);
             }
         }
 
-        unset($this->config->session[$this->config->namespace]);
+        unset($this->config['session'][$this->config['namespace']]);
         $this->commit();
     }
 
@@ -349,9 +349,9 @@ class Save
      */
     public function exists(string $name, bool $in_flash = false): bool
     {
-        $namespace = $this->config->namespace;
-        $segment = $this->config->segment;
-        return isset($this->config->session[$namespace][$segment][$in_flash ? 'flash' : 'set'][$name]);
+        $namespace = $this->config['namespace'];
+        $segment = $this->config['segment'];
+        return isset($this->config['session'][$namespace][$segment][$in_flash ? 'flash' : 'set'][$name]);
     }
 
     /**
@@ -364,10 +364,10 @@ class Save
         $_SESSION = [];
         session_destroy();
         session_write_close();
-        $_ = $this->config->session_params;
-        setcookie($this->config->name, '', -1, $_['path'], $_['domain'], $_['secure'], $_['httponly']);
+        $_ = $this->config['session_params'];
+        setcookie($this->config['name'], '', -1, $_['path'], $_['domain'], $_['secure'], $_['httponly']);
         # Reset the session data
-        $this->config->session = [];
+        $this->config['session'] = [];
     }
 
 }

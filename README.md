@@ -2,25 +2,29 @@
 PHP Session Manager (non-blocking, flash, segment, session encryption). Uses PHP [open_ssl](http://php.net/manual/en/book.openssl.php) for optional encrypt/decryption of session data.
 
 ### Driver support  Scope
-![File](https://img.shields.io/badge/FILE-completed-blue.svg?style=flat-square)&nbsp;&nbsp;&nbsp;![File](https://img.shields.io/badge/COOKIE-completed-blue.svg?style=flat-square)&nbsp;&nbsp;&nbsp;![File](https://img.shields.io/badge/SQL-completed-blue.svg?style=flat-square)&nbsp;&nbsp;&nbsp;![File](https://img.shields.io/badge/MEMCACHE-active-brightgreen.svg?style=flat-square)&nbsp;&nbsp;&nbsp;![File](https://img.shields.io/badge/REDIS-queued-lightgray.svg?style=flat-square)&nbsp;&nbsp;&nbsp;
+![File](https://img.shields.io/badge/FILE-completed-blue.svg?style=flat-square)&nbsp;&nbsp;&nbsp;![File](https://img.shields.io/badge/COOKIE-completed-blue.svg?style=flat-square)&nbsp;&nbsp;&nbsp;![File](https://img.shields.io/badge/SQL-completed-blue.svg?style=flat-square)&nbsp;&nbsp;&nbsp;![File](https://img.shields.io/badge/MEMCACHED-active-blue.svg?style=flat-square)&nbsp;&nbsp;&nbsp;![File](https://img.shields.io/badge/REDIS-active-brightgreen.svg?style=flat-square)&nbsp;&nbsp;&nbsp;
+
+
+## Registering Error Handler
+```php
+#This method must be implemented before Session::start
+Session::registerErrorHandler(function($error, $error_code)
+{
+    #Debug::Log($error);
+});
+```
+
+## Setting session id *:void*
+```php
+#This method must be implemented before Session::start
+Session::id(bin2hex(random_bytes(32)));
+```
 
 ## Initializing Session
 ```php
-# Register Error Handler
-Session::registerErrorHandler(function($error, $error_code)
-{
-    # Debug::Log($error)
-    # throw new  RuntimeException($error);
-});
-
 $session = Session::start($optional_session_namespace);
 ```
-## Setting session id *:void*
-```php
-Session::id(bin2hex(random_bytes(32)));
 
-$session = Session::start($optional_session_namespace);
-```
 
 ## Using Segment *:Segment*
 ```php

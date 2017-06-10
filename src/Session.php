@@ -58,7 +58,8 @@ class Session
         $config = include($path . 'config.php');
 
         self::$initialized = $config;
-        self::$class = ucfirst($config['driver']);
+        $driver = $config['driver'];
+        self::$class = ucfirst($driver);
 
         if( ! is_dir($path . self::$class))
         {
@@ -82,11 +83,14 @@ class Session
         {
             throw new RuntimeException('config.secure expected value to be a boolean or null');
         }
+        
         if ($secured == null)
         {
             $secured = ( ! empty($_SERVER['HTTPS']) && strtolower($_SERVER['HTTPS'] == 'on'));
         }
 
+
+        ini_set('session.save_handler', ($driver == 'file') ? 'files' : (($driver !== 'memcached') ? 'user' : 'memcached'));
         ini_set('session.use_cookies', '1');
         ini_set('session.gc_maxlifetime', $config['max_life_time']);
         ini_set('session.gc_probability', $config['probability']);
@@ -94,9 +98,9 @@ class Session
         $config['expiration'] = ($current == 0) ? 0 : time() + $current;
         session_set_cookie_params($config['expiration'], $config['path'], $config['domain'], $secured, $config['http_only']);
 
-        $save_path = $config['save_path'];
-        if (trim($save_path) !== '')
+        if (self::$class == 'File')
         {
+            $save_path = $config[$driver]['save_path'];
             if (is_dir($save_path))
             {
                 session_save_path($save_path);
@@ -106,7 +110,11 @@ class Session
                 throw new RuntimeException(sprintf('save_path (%s) does not exist', $save_path));
             }
         }
-
+        elseif ( self::$class == 'Memcached')
+        {
+             session_save_path($config[$driver]['save_path']);
+        }
+        
         $class = '\Session\\' . self::$class . '\Handler';
         session_set_save_handler(new $class(self::$initialized), true);
 
@@ -162,7 +170,7 @@ class Session
 
         self::$started = true;
         self::$initialized['namespace'] = $namespace;
-        return new \Session\Save((object) self::$initialized);
+        return new \Session\Save(self::$initialized);
     }
 
     /**

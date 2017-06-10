@@ -38,9 +38,8 @@
  */
 
 return [
-    'driver'        => 'memcached',         # Name of session driver to use: [file|sql|cookie|redis|memcache]
+    'driver'        => 'file',         # Name of session driver to use: [file|sql|cookie|redis|memcache]
     'name'          => '_Bittr_SESSID',     # session name
-    'save_path'     => __DIR__ . '/tmp',    # Path where your session files will be store. Ineffective if driver is not file
     'cache_limiter' => 'none',              # http://php.net/manual/en/function.session-cache-limiter.php
 
     #[security]
@@ -60,8 +59,13 @@ return [
     #[garbage collection]
     'max_life_time' => '1440',
     'probability'   => '1',
+    
+    #[file driver] -- comment out if not using.
+    'file'          => [
+        'save_path' => __DIR__ . '/tmp',    # Path where your session files will be store. Ineffective if driver is not file
+    ],
 
-    #[sql driver]
+    #[sql driver] -- comment out if not using.
     'sql'           => [
         'driver'    => 'mysql',             # Database driver
         'host'      => '127.0.0.1',         # Database host
@@ -72,12 +76,13 @@ return [
         'persistent_conn'=> false,          # Avoid the overhead of establishing a new connection every time a script needs to talk to a database, resulting in a faster web application. FIND THE BACKSIDE YOURSELF
     ],
 
-    #[memcached driver]
+    #[memcached driver] -- comment out if not using.
     'memcached'     => [
         'servers'   => [
-            ['127.0.0.1', 11211, 1]
+            ['127.0.0.1', 11211, 0]
         ],
         'compress'  => true,
+        'save_path' => 'localhost:11211',  #comma separated of hostname:port entries to use for session server pool.
         'persistent_conn' => false,
     ]
 

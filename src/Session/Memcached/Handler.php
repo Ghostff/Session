@@ -51,6 +51,8 @@ class Handler implements \SessionHandlerInterface
     private $conn = null;
 
     private $expire = 0;
+    
+    private $name = null;
 
     public function __construct(array $config)
     {
@@ -59,17 +61,18 @@ class Handler implements \SessionHandlerInterface
             throw new \RuntimeException('No memcached configuration found in config file.');
         }
 
-        $config = $config['memcached'];
         $this->expire = $config['expiration'];
+        $this->name = $config['name'];
+        $config = $config['memcached'];
 
-        $conn = new Memcache(($config['persistent_conn']) ? $config['name'] : null);
+        $conn = new Memcached(($config['persistent_conn']) ? $config['name'] : null);
         $conn->setOptions([Memcached::OPT_LIBKETAMA_COMPATIBLE => true, Memcached::OPT_COMPRESSION => $config['compress']]);
 
         if ( ! count($conn->getServerList()))
         {
             $conn->addServers($config['servers']);
         }
-
+        
         $this->conn = $conn;
         $conn = null;
     }
@@ -86,18 +89,18 @@ class Handler implements \SessionHandlerInterface
 
     public function read($id): string
     {
-        $data = $this->conn->get('sess_' . $id);
+        $data = $this->conn->get($this->name . $id);
         return ($data == '' || $data == false) ? '' : Session::decrypt($data);
     }
 
     public function write($id, $data): bool
     {
-        return $this->conn->set('sess_' . $id, Session::encrypt($data), $this->expire);
+        return $this->conn->set($this->name . $id, Session::encrypt($data), $this->expire);
     }
 
     public function destroy($id): bool
     {
-        return $this->conn->delete('sess_' . $id);
+        return $this->conn->delete($this->name . $id);
     }
 
     public function gc($max_life_time): bool
