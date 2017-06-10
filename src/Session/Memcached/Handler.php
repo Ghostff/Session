@@ -102,5 +102,6 @@ class Handler implements \SessionHandlerInterface
 
     public function gc($max_life_time): bool
     {
+        return true;
     }
 }

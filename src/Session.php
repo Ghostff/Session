@@ -88,6 +88,8 @@ class Session
         }
 
         ini_set('session.use_cookies', '1');
+        ini_set('session.gc_maxlifetime', $config['max_life_time']);
+        ini_set('session.gc_probability', $config['probability']);
         $current = $config['expiration'];
         $config['expiration'] = ($current == 0) ? 0 : time() + $current;
         session_set_cookie_params($config['expiration'], $config['path'], $config['domain'], $secured, $config['http_only']);
@@ -98,8 +100,6 @@ class Session
             if (is_dir($save_path))
             {
                 session_save_path($save_path);
-                ini_set('session.gc_maxlifetime', $config['max_life_time']);
-                ini_set('session.gc_probability', $config['probability']);
             }
             else
             {

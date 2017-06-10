@@ -62,13 +62,13 @@ class Handler implements \SessionHandlerInterface
             return '';
         }
 
-        return \Session::decrypt($_COOKIE[$id]);
+        return Session::decrypt($_COOKIE[$id]);
     }
 
     public function write($id, $data): bool
     {
         $_ = session_get_cookie_params();
-        return setcookie($id, \Session::encrypt($data), $_['lifetime'], $_['path'], $_['domain'], $_['secure'], $_['httponly']);
+        return setcookie($id, Session::encrypt($data), $_['lifetime'], $_['path'], $_['domain'], $_['secure'], $_['httponly']);
     }
 
     public function destroy($id): bool

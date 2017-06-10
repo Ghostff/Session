@@ -38,8 +38,7 @@
  */
 
 return [
-
-    'driver'        => 'sql',              # Name of session driver to use: [file|sql|cookie|redis|memcache]
+    'driver'        => 'memcached',         # Name of session driver to use: [file|sql|cookie|redis|memcache]
     'name'          => '_Bittr_SESSID',     # session name
     'save_path'     => __DIR__ . '/tmp',    # Path where your session files will be store. Ineffective if driver is not file
     'cache_limiter' => 'none',              # http://php.net/manual/en/function.session-cache-limiter.php
@@ -58,7 +57,7 @@ return [
     'secure'        => null,                # If set to true, cookies are transmitted over HTTPS. null = auto dictate
     'expiration'    => 0,                   # Number of seconds of after which the session will expire. 0 = after browser closes
 
-    #[garage collection]
+    #[garbage collection]
     'max_life_time' => '1440',
     'probability'   => '1',
 
@@ -72,7 +71,7 @@ return [
         'db_pass'   => '',                  # Database password
         'persistent_conn'=> false,          # Avoid the overhead of establishing a new connection every time a script needs to talk to a database, resulting in a faster web application. FIND THE BACKSIDE YOURSELF
     ],
-    
+
     #[memcached driver]
     'memcached'     => [
         'servers'   => [
