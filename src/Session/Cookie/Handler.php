@@ -40,6 +40,7 @@
 declare(strict_types=1);
 
 namespace Session\Cookie;
+use Session;
 
 
 class Handler implements \SessionHandlerInterface
@@ -67,6 +68,11 @@ class Handler implements \SessionHandlerInterface
 
     public function write($id, $data): bool
     {
+        if ( ! Session::$write)
+        {
+            return true;
+        }
+        Session::$write = false;
         $_ = session_get_cookie_params();
         return setcookie($id, Session::encrypt($data), $_['lifetime'], $_['path'], $_['domain'], $_['secure'], $_['httponly']);
     }

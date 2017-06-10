@@ -68,6 +68,11 @@ class Handler implements \SessionHandlerInterface
 
     public function write($id, $data): bool
     {
+        if ( ! Session::$write)
+        {
+            return true;
+        }
+        Session::$write = false;
         return (file_put_contents($this->savePath . '/sess_' . $id, Session::encrypt($data)) !== false);
     }
 

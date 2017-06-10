@@ -50,6 +50,8 @@ class Session
     private static $class = null;
 
     private static $ssl_enabled = true;
+    
+    public static $write = false;
 
     private static function init()
     {
@@ -69,12 +71,12 @@ class Session
         elseif (self::$initialized['encrypt_data'] === true && ! extension_loaded('openssl'))
         {
             self::$ssl_enabled = false;
-            trigger_error('You don\'t have openssl enabled. So session data wont be encrypted.', E_USER_NOTICE);
+            trigger_error('The openssl extension is missing. Please check your PHP configuration.', E_USER_NOTICE);
         }
 
         if (self::$class == 'Memcached' && ! extension_loaded('Memcached'))
         {
-            throw new \RuntimeException('You don\'t have Memcached enabled.');
+            throw new \RuntimeException('The Memcached extension is missing. Please check your PHP configuration.');
         }
 
         session_cache_limiter($config['cache_limiter']);

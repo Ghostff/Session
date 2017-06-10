@@ -95,6 +95,11 @@ class Handler implements \SessionHandlerInterface
 
     public function write($id, $data): bool
     {
+        if ( ! Session::$write)
+        {
+            return true;
+        }
+        Session::$write = false;
         return $this->conn->set($this->name . $id, Session::encrypt($data), $this->expire);
     }
 

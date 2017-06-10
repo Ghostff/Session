@@ -42,6 +42,7 @@ declare(strict_types=1);
 
 
 namespace Session;
+use Session;
 
 class Save
 {
@@ -133,7 +134,7 @@ class Save
         {
             session_name($this->config['name']);
         }
-
+        
         session_start();
 
         # store current session ID
@@ -284,6 +285,7 @@ class Save
      */
     public function commit()
     {
+        Session::$write = true;
         session_start();
         $_SESSION = $this->config['session'];
         session_write_close();
@@ -359,10 +361,10 @@ class Save
      */
     public function destroy()
     {
-        @session_start();
+        session_start();
         # Empty out session
         $_SESSION = [];
-        session_destroy();
+        @session_destroy();
         session_write_close();
         $_ = $this->config['session_params'];
         setcookie($this->config['name'], '', -1, $_['path'], $_['domain'], $_['secure'], $_['httponly']);

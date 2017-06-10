@@ -52,6 +52,7 @@ class Handler implements \SessionHandlerInterface
     private $table = null;
     
     private $persistent = false;
+    
 
     public function __construct(array $config)
     {
@@ -74,7 +75,7 @@ class Handler implements \SessionHandlerInterface
 
         try
         {
-            $this->conn->query('SELECT 1 FROM ' . $table . ' LIMIT 1');
+            $this->conn->query('SELECT 1 FROM `' . $table . '` LIMIT 1');
         }
         catch (\PDOException  $e)
         {
@@ -100,8 +101,9 @@ class Handler implements \SessionHandlerInterface
     public function read($id): string
     {
         $data = '';
-        $statement = $this->conn->prepare('SELECT data FROM ' . $this->table . ' WHERE id = :id');
-        if ( $statement->bindParam(':id', $id, PDO::PARAM_STR))
+        $statement = $this->conn->prepare('SELECT `data` FROM `' . $this->table . '` WHERE `id` = :id');
+        $statement->bindParam(':id', $id, PDO::PARAM_STR);
+        if ($statement->execute())
         {
             $result = $statement->fetch();
             $data = $result['data'] ?? '';
@@ -113,19 +115,25 @@ class Handler implements \SessionHandlerInterface
 
     public function write($id, $data): bool
     {
-        $statement = $this->conn->prepare('REPLACE INTO ' . $this->table . ' (id, data, time) VALUES (:id, :data, :time)');
+        if ( ! Session::$write)
+        {
+            return true;
+        }
+        
+        $statement = $this->conn->prepare('REPLACE INTO `' . $this->table . '` (`id`, `data`, `time`) VALUES (:id, :data, :time)');
         $statement->bindParam(':id', $id, PDO::PARAM_STR);
         $statement->bindValue(':data', Session::encrypt($data), PDO::PARAM_STR);
         $statement->bindValue(':time', time(), PDO::PARAM_INT);
         $completed = $statement->execute();
         #close
         $statement = null;
+        Session::$write = false;
         return $completed;
     }
 
     public function destroy($id): bool
     {
-        $statement = $this->conn->prepare('DELETE FROM ' . $this->table . ' WHERE id = :id');
+        $statement = $this->conn->prepare('DELETE FROM `' . $this->table . '` WHERE `id` = :id');
         $statement->bindParam(':id', $id, PDO::PARAM_STR);
         $completed = $statement->execute();
         #close
@@ -136,7 +144,7 @@ class Handler implements \SessionHandlerInterface
     public function gc($max_life_time): bool
     {
         $max_life_time = time() - $max_life_time;
-        $statement = $this->conn->prepare('DELETE FROM ' . $this->table . ' WHERE time < :time');
+        $statement = $this->conn->prepare('DELETE FROM `' . $this->table . '` WHERE `time` < :time');
         $statement->bindParam(':time', $max_life_time, PDO::PARAM_INT);
         $completed = $statement->execute();
         #close
