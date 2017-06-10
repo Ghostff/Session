@@ -82,7 +82,7 @@ return [
             ['127.0.0.1', 11211, 0]
         ],
         'compress'  => true,
-        'save_path' => 'localhost:11211',  #comma separated of hostname:port entries to use for session server pool.
+        'save_path' => '127.0.0.1:11211',  #comma separated of hostname:port entries to use for session server pool.
         'persistent_conn' => false,
     ]
 
