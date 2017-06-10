@@ -2,7 +2,7 @@
 PHP Session Manager (non-blocking, flash, segment, session encryption). Uses PHP [open_ssl](http://php.net/manual/en/book.openssl.php) for optional encrypt/decryption of session data.
 
 ### Driver support  Scope
-![File](https://img.shields.io/badge/FILE-completed-blue.svg?style=flat-square)&nbsp;&nbsp;&nbsp;![File](https://img.shields.io/badge/COOKIE-completed-blue.svg?style=flat-square)&nbsp;&nbsp;&nbsp;![File](https://img.shields.io/badge/SQL-completed-blue.svg?style=flat-square)&nbsp;&nbsp;&nbsp;![File](https://img.shields.io/badge/MEMCACHED-active-blue.svg?style=flat-square)&nbsp;&nbsp;&nbsp;![File](https://img.shields.io/badge/REDIS-active-brightgreen.svg?style=flat-square)&nbsp;&nbsp;&nbsp;
+![file](https://img.shields.io/badge/FILE-completed-blue.svg?style=flat-square)&nbsp;&nbsp;&nbsp;![cookie](https://img.shields.io/badge/COOKIE-completed-blue.svg?style=flat-square)&nbsp;&nbsp;&nbsp;![sql](https://img.shields.io/badge/SQL-completed-blue.svg?style=flat-square)&nbsp;&nbsp;&nbsp;![memcached](https://img.shields.io/badge/MEMCACHED-active-blue.svg?style=flat-square)&nbsp;&nbsp;&nbsp;![redis](https://img.shields.io/badge/REDIS-active-brightgreen.svg?style=flat-square)&nbsp;&nbsp;&nbsp;
 
 
 ## Registering Error Handler
