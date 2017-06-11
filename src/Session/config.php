@@ -38,7 +38,7 @@
  */
 
 return [
-    'driver'        => 'memcached',         # Name of session driver to use: [file|sql|cookie|redis|memcached]
+    'driver'        => 'redis',             # Name of session driver to use: [file|sql|cookie|redis|memcached]
     'name'          => '_Bittr_SESSID',     # session name
     'cache_limiter' => 'none',              # http://php.net/manual/en/function.session-cache-limiter.php
 
@@ -83,6 +83,14 @@ return [
         ],
         'compress'  => true,
         'save_path' => '127.0.0.1:11211',  #comma separated of hostname:port entries to use for session server pool.
+        'persistent_conn' => false,
+    ],
+    
+    #[redis driver] -- comment out if not using.
+    'redis'         => [
+        'host'      => '127.0.0.1',
+        'port'      => 6379,
+        'save_path' => 'tcp://127.0.0.1:6379',  #comma separated of hostname:port entries to use for session server pool.
         'persistent_conn' => false,
     ]
 

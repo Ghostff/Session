@@ -92,7 +92,7 @@ class Session
         }
 
 
-        ini_set('session.save_handler', ($driver == 'file') ? 'files' : (($driver !== 'memcached') ? 'user' : 'memcached'));
+        ini_set('session.save_handler', ($driver == 'file') ? 'files' : (($driver == 'memcached' || $driver == 'redis') ? $driver : 'user'));
         ini_set('session.use_cookies', '1');
         ini_set('session.gc_maxlifetime', $config['max_life_time']);
         ini_set('session.gc_probability', $config['probability']);
@@ -112,7 +112,7 @@ class Session
                 throw new RuntimeException(sprintf('save_path (%s) does not exist', $save_path));
             }
         }
-        elseif ( self::$class == 'Memcached')
+        elseif ( self::$class == 'Memcached' || self::$class == 'Redis')
         {
              session_save_path($config[$driver]['save_path']);
         }
