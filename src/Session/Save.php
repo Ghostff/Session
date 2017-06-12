@@ -218,7 +218,7 @@ class Save
             $_last = ($last == 'remove') ? 'set' : $last;
             if ( ! isset($this->config['session'][$namespace][$segment][$_last][$name]))
             {
-                throw new \RuntimeException($name . ' does not exist. or has been removed');
+                return null;
             }
 
             if ($last == 'set')
@@ -264,7 +264,7 @@ class Save
             }
             else
             {
-                throw new \RuntimeException('segment ' . $segment . 'does not exist.');
+                throw new \RuntimeException('segment ' . $segment . ' does not exist.');
             }
         }
     }

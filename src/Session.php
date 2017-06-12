@@ -152,7 +152,7 @@ class Session
         }
         elseif (preg_match('/^[\w-,]{1,128}$/', $id) < 1)
         {
-            throw new \InvalidArgumentException('Invalid Session ID provide');
+            throw new \InvalidArgumentException('Invalid Session ID');
         }
         else
         {
