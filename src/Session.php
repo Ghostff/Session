@@ -74,9 +74,13 @@ class Session
             trigger_error('The openssl extension is missing. Please check your PHP configuration.', E_USER_NOTICE);
         }
 
-        if (self::$class == 'Memcached' && ! extension_loaded('Memcached'))
+        
+        if (self::$class != 'File' && self::$class != 'Cookie')
         {
-            throw new \RuntimeException('The Memcached extension is missing. Please check your PHP configuration.');
+            if ( ! extension_loaded(self::$class))
+            {
+                throw new \RuntimeException('The ' . self::$class . ' extension is missing. Please check your PHP configuration.');
+            }
         }
 
         session_cache_limiter($config['cache_limiter']);
