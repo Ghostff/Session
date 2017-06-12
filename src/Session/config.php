@@ -38,7 +38,7 @@
  */
 
 return [
-    'driver'        => 'redis',             # Name of session driver to use: [file|sql|cookie|redis|memcached]
+    'driver'        => 'pdo',             # Name of session driver to use: [file|pdo|cookie|redis|memcached]
     'name'          => '_Bittr_SESSID',     # session name
     'cache_limiter' => 'none',              # http://php.net/manual/en/function.session-cache-limiter.php
 
@@ -65,8 +65,8 @@ return [
         'save_path' => __DIR__ . '/tmp',    # Path where your session files will be store. Ineffective if driver is not file
     ],
 
-    #[sql driver] -- comment out if not using.
-    'sql'           => [
+    #[pdo driver] -- comment out if not using.
+    'pdo'           => [
         'driver'    => 'mysql',             # Database driver
         'host'      => '127.0.0.1',         # Database host
         'db_name'   => 'session',           # Database name

@@ -40,7 +40,7 @@
 
 declare(strict_types=1);
 
-namespace Session\Sql;
+namespace Session\Pdo;
 use PDO, Session;
 
 
@@ -56,12 +56,12 @@ class Handler implements \SessionHandlerInterface
 
     public function __construct(array $config)
     {
-        if ( ! isset($config['sql']))
+        if ( ! isset($config['pdo']))
         {
-            throw new \RuntimeException('No sql configuration found in config file.');
+            throw new \RuntimeException('No pdo configuration found in config file.');
         }
 
-        $config = $config['sql'];
+        $config = $config['pdo'];
         $table = $config['table'] ?? 'session';
         $this->table = $table;
         $this->persistent = $config['persistent_conn'];
