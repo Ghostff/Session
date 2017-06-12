@@ -68,10 +68,10 @@ class Session
             throw new RuntimeException('No driver found for ' . self::$class);
         }
 
-        elseif (self::$initialized['encrypt_data'] === true && ! extension_loaded('openssl'))
+        self::$ssl_enabled = self::$initialized['encrypt_data'];
+        if (self::$ssl_enabled && ! extension_loaded('openssl'))
         {
-            self::$ssl_enabled = false;
-            trigger_error('The openssl extension is missing. Please check your PHP configuration.', E_USER_NOTICE);
+            throw new \RuntimeException('The openssl extension is missing. Please check your PHP configuration.');
         }
 
         
@@ -144,7 +144,7 @@ class Session
         }
         elseif (strlen($id) > 250)
         {
-            throw new \RuntimeException('Session id cant be above 500 characters long');
+            throw new \RuntimeException('Session id cant be above 250 characters long');
         }
         elseif (headers_sent($filename, $line_num))
         {
