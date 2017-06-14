@@ -67,7 +67,7 @@ return [
 
     #[pdo driver] -- comment out if not using.
     'pdo'           => [
-        'driver'    => 'mysql',             # Database driver
+        'driver'    => 'mysqli',             # Database driver
         'host'      => '127.0.0.1',         # Database host
         'db_name'   => 'session',           # Database name
         #'db_table' => 'session',           # Database table
