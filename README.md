@@ -2,10 +2,21 @@
 PHP Session Manager (non-blocking, flash, segment, session encryption). Uses PHP [open_ssl](http://php.net/manual/en/book.openssl.php) for optional encrypt/decryption of session data.
 
 ### Driver support  Scope
-![file](https://img.shields.io/badge/FILE-completed-blue.svg?style=flat-square)&nbsp;&nbsp;&nbsp;![cookie](https://img.shields.io/badge/COOKIE-completed-blue.svg?style=flat-square)&nbsp;&nbsp;&nbsp;![pdo](https://img.shields.io/badge/PDO-completed-blue.svg?style=flat-square)&nbsp;&nbsp;&nbsp;![memcached](https://img.shields.io/badge/MEMCACHED-active-blue.svg?style=flat-square)&nbsp;&nbsp;&nbsp;![redis](https://img.shields.io/badge/REDIS-active-brightgreen.svg?style=flat-square)&nbsp;&nbsp;&nbsp;
+![file](https://img.shields.io/badge/FILE-completed-brightgreen.svg?style=flat-square)&nbsp;&nbsp;&nbsp;![cookie](https://img.shields.io/badge/COOKIE-completed-brightgreen.svg?style=flat-square)&nbsp;&nbsp;&nbsp;![pdo](https://img.shields.io/badge/PDO-completed-brightgreen.svg?style=flat-square)&nbsp;&nbsp;&nbsp;![memcached](https://img.shields.io/badge/MEMCACHED-completed-brightgreen.svg?style=flat-square)&nbsp;&nbsp;&nbsp;![redis](https://img.shields.io/badge/REDIS-active-brightgreen.svg?style=flat-square)&nbsp;&nbsp;&nbsp;[![license](https://img.shields.io/pypi/l/Django.svg?style=flat-square)]()&nbsp;&nbsp;&nbsp;[![Minimum PHP Version](https://img.shields.io/badge/php-%3E%3D%207.0-8892BF.svg?style=flat-square)](http://php.net/releases/7_0_0.php)
 
+# Installation   
+You can download the Latest [release version ](https://github.com/Ghostff/Session/releases/) as a standalone, alternatively you can use [Composer](https://getcomposer.org/) 
+```json
+$ composer require ghostff/session
+```
+```json
+"require": {
+    "ghostff/session": "^1.0"
+}
+```    
 
-## Registering Error Handler
+Basic usage:
+## Registering Error Handler (optional)
 ```php
 #This method must be implemented before Session::start
 Session::registerErrorHandler(function($error, $error_code)

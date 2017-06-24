@@ -1,0 +1,24 @@
+{
+    "name": "ghostff/session",
+    "description": "PHP Session Manager (non-blocking, flash, segment, session encryption).",
+    "type": "library",
+    "keywords" : ["session", "segment", "secured-session", "session-manger", "non-blocking", "memcached", "redis", "sql"],
+    "license": "BSD",
+    "authors": [
+        {
+            "name": "Chrys Ugwu",
+            "email": "frankchris@hotmail.com"
+        }
+    ],
+    "require": {
+		"php": ">=7.0.0"	
+	},
+	"autoload" : {
+	    "classmap": [
+		  "src/Session.php"
+		],
+		"psr-4" : {
+		  	"Session\\" : "src/Session"
+		}
+    }
+}
