@@ -16,7 +16,7 @@
 	"autoload" : {
 	    "classmap": [
 		  "src/Session.php"
-		]
+		],
 		"psr-4" : {
 		  	"Session\\" : "src/Session"
 		}
