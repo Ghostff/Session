@@ -38,7 +38,7 @@
  */
 
 return [
-    'driver'        => 'pdo',             # Name of session driver to use: [file|pdo|cookie|redis|memcached]
+    'driver'        => 'file',             # Name of session driver to use: [file|pdo|cookie|redis|memcached]
     'name'          => '_Bittr_SESSID',     # session name
     'cache_limiter' => 'none',              # http://php.net/manual/en/function.session-cache-limiter.php
 
@@ -67,7 +67,7 @@ return [
 
     #[pdo driver] -- comment out if not using.
     'pdo'           => [
-        'driver'    => 'mysqli',             # Database driver
+        'driver'    => 'mysql',             # Database driver for PDO dns eg(mysql:host=...;dbname=...)
         'host'      => '127.0.0.1',         # Database host
         'db_name'   => 'session',           # Database name
         #'db_table' => 'session',           # Database table

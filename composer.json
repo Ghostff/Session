@@ -14,11 +14,11 @@
 		"php": ">=7.0.0"	
 	},
 	"autoload" : {
-	    "classmap": [
-		  "src/Session.php"
-		],
 		"psr-4" : {
 		  	"Session\\" : "src/Session"
 		}
+    },
+    "require-dev": {
+        "ghostff/session": "^1.0"
     }
 }
