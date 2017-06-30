@@ -25,10 +25,13 @@ Session::registerErrorHandler(function($error, $error_code)
 });
 ```
 
-## Setting session id *:void*
+## Setting or getting session id *:void*
 ```php
-#This method must be implemented before Session::start
+#When setting ID, method must be implemented before Session::start
 Session::id(bin2hex(random_bytes(32)));
+
+#Get ID
+echo Session::id();
 ```
 
 ## Initializing Session
@@ -87,7 +90,7 @@ $session->all($optional_segment);
 
 ## Check if variable exist in current session namespace *:bool*
 ```php
-$session->exists($variable_name, $in_flash);
+$session->exist($variable_name, $option_segment, $in_flash);
 ```
 
 
@@ -103,5 +106,5 @@ $session->destroy();
 
 ## Regenerate session ID *:void*
 ```php
-$session->rotate(true);
+$session->rotate($keep_old_session_data);
 ```
