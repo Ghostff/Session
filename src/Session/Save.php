@@ -138,7 +138,9 @@ class Save
         session_start();
 
         # store current session ID
-        $this->config['sess_id'] = session_id();
+        $id = session_id();
+        $this->config['sess_id'] = $id;
+        Session::$id = $id;
 
         $_ = session_get_cookie_params();
         setcookie($this->config['name'], $this->config['sess_id'], $_['lifetime'], $_['path'], $_['domain'], $_['secure'], $_['httponly']);
@@ -306,7 +308,9 @@ class Save
 
         session_start();
         session_regenerate_id($delete_old);
-        $this->config['sess_id'] = session_id();
+        $id = session_id();
+        $this->config['sess_id'] = $id;
+        Session::$id = $id;
         if ($write_nd_close)
         {
             session_write_close();
@@ -340,7 +344,6 @@ class Save
             }
         }
 
-        unset($this->config['session'][$this->config['namespace']]);
         $this->commit();
     }
 
@@ -349,10 +352,18 @@ class Save
      * @param bool $in_flash
      * @return bool
      */
-    public function exists(string $name, bool $in_flash = false): bool
+    public function exist(string $name, string $segment = null, bool $in_flash = false): bool
     {
         $namespace = $this->config['namespace'];
-        $segment = $this->config['segment'];
+        
+        if ($segment != null)
+        {
+            $segment = 'segment:' . $segment;
+        }
+        else
+        {
+            $segment = $this->config['segment'];
+        }
         return isset($this->config['session'][$namespace][$segment][$in_flash ? 'flash' : 'set'][$name]);
     }
 

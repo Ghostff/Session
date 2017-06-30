@@ -38,12 +38,12 @@
  */
 
 return [
-    'driver'        => 'file',             # Name of session driver to use: [file|pdo|cookie|redis|memcached]
+    'driver'        => 'cookie',             # Name of session driver to use: [file|pdo|cookie|redis|memcached]
     'name'          => '_Bittr_SESSID',     # session name
     'cache_limiter' => 'none',              # http://php.net/manual/en/function.session-cache-limiter.php
 
     #[security]
-    'encrypt_data'  => false,               # Allow encryption of session data.
+    'encrypt_data'  => true,               # Allow encryption of session data.
     'key'           => 'secret_salt_key',   # Encryption key. ineffective if 'encrypt_data' = false
     'match_ip'      => false,               # If set to true, IP address will be stored and validated on each I/O.
     'match_browser' => false,               # If set to true, browser will be stored and validated on each I/O.

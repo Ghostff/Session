@@ -52,6 +52,8 @@ class Session
     private static $ssl_enabled = true;
     
     public static $write = false;
+    
+    public static $id = '';
 
     private static function init()
     {
@@ -131,33 +133,34 @@ class Session
      *
      * @param string $id
      */
-    public static function id(string $id)
+    public static function id(string $id = ''): string
     {
         if (empty(self::$initialized))
         {
             self::init();
         }
 
-        if (self::$started)
+        if ($id != '')
         {
-            throw new \RuntimeException('Session is active. The session id must be set before Session::start().');
+            if (self::$started)
+            {
+                throw new \RuntimeException('Session is active. The session id must be set before Session::start().');
+            }
+            elseif (headers_sent($filename, $line_num))
+            {
+                throw new \RuntimeException(sprintf('ID must be set before any output is sent to the browser (file: %s, line: %s)', $filename, $line_num));
+            }
+            elseif (preg_match('/^[-,a-zA-Z0-9]{1,128}$/', $id) < 1)
+            {
+                throw new \InvalidArgumentException('Invalid Session ID.');
+            }
+            else
+            {
+                session_id($id);
+            }
         }
-        elseif (strlen($id) > 250)
-        {
-            throw new \RuntimeException('Session id cant be above 250 characters long');
-        }
-        elseif (headers_sent($filename, $line_num))
-        {
-            throw new \RuntimeException(sprintf('ID must be set before any output is sent to the browser (file: %s, line: %s)', $filename, $line_num));
-        }
-        elseif (preg_match('/^[\w-,]{1,128}$/', $id) < 1)
-        {
-            throw new \InvalidArgumentException('Invalid Session ID');
-        }
-        else
-        {
-            session_id($id);
-        }
+        
+        return self::$id;
     }
 
 
@@ -222,18 +225,18 @@ class Session
         $ct = substr($data, 16);
 
         $rounds = 3; // depends on key length
-        $data00 = $password.$salt;
-        $hash = array();
+        $data00 = $password . $salt;
+        $hash = [];
         $hash[0] = hash('sha256', $data00, true);
         $result = $hash[0];
         for ($i = 1; $i < $rounds; $i++)
         {
-            $hash[$i] = hash('sha256', $hash[$i - 1].$data00, true);
+            $hash[$i] = hash('sha256', $hash[$i - 1] . $data00, true);
             $result .= $hash[$i];
         }
         $key = substr($result, 0, 32);
         $iv  = substr($result, 32,16);
-        $decrypted = openssl_decrypt($ct, 'AES-256-CBC', $key, true, $iv);
+        $decrypted = openssl_decrypt($ct, 'AES-256-CBC', $key, 1, $iv);
 
         return ( ! $decrypted) ? '' : $decrypted;
     }
@@ -259,14 +262,14 @@ class Session
         // Salt the key(32) and iv(16) = 48
         while (strlen($salted) < 48)
         {
-            $dx = hash('sha256', $dx.$password.$salt, true);
+            $dx = hash('sha256', $dx . $password . $salt, true);
             $salted .= $dx;
         }
 
         $key = substr($salted, 0, 32);
         $iv  = substr($salted, 32,16);
 
-        $encrypted_data = openssl_encrypt($data, 'AES-256-CBC', $key, true, $iv);
+        $encrypted_data = openssl_encrypt($data, 'AES-256-CBC', $key, 1, $iv);
         return base64_encode($salt . $encrypted_data);
     }
 }
