@@ -169,10 +169,10 @@ class Session
      * starts a new session
      *
      * @param string $namespace
-     * @param bool $auto_save (Alternative for https://github.com/Ghostff/Session/issues/4)
+     * @param bool $auto_commit (Alternative for https://github.com/Ghostff/Session/issues/4)
      * @return Save
      */
-    public static function start(string $namespace = '__GLOBAL', bool $auto_save = true): Save
+    public static function start(string $namespace = '__GLOBAL', bool $auto_commit = true): Save
     {
         if (empty(self::$initialized))
         {
@@ -182,7 +182,7 @@ class Session
         self::$started = true;
         self::$initialized['namespace'] = $namespace;
         $handler = new Save(self::$initialized);
-        if ($auto_save)
+        if ($auto_commit)
         {
             register_shutdown_function(function () use ($handler)
             {
