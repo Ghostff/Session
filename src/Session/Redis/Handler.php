@@ -56,7 +56,7 @@ class Handler implements \SessionHandlerInterface
 
     public function __construct(array $config)
     {
-        if ( ! isset($config['redis']))
+        if (! isset($config['redis']))
         {
             throw new \RuntimeException('No Redis configuration found in config file.');
         }
@@ -97,7 +97,7 @@ class Handler implements \SessionHandlerInterface
 
     public function write($id, $data): bool
     {
-        if ( ! Session::$write)
+        if (! Session::$write)
         {
             return true;
         }

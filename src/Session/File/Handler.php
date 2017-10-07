@@ -68,7 +68,7 @@ class Handler implements \SessionHandlerInterface
 
     public function write($id, $data): bool
     {
-        if ( ! Session::$write)
+        if (! Session::$write)
         {
             return true;
         }

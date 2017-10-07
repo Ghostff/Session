@@ -38,7 +38,7 @@
  */
 
 return [
-    'driver'        => 'cookie',             # Name of session driver to use: [file|pdo|cookie|redis|memcached]
+    'driver'        => 'file',             # Name of session driver to use: [file|pdo|cookie|redis|memcached]
     'name'          => '_Bittr_SESSID',     # session name
     'cache_limiter' => 'none',              # http://php.net/manual/en/function.session-cache-limiter.php
 

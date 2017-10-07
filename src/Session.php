@@ -37,9 +37,9 @@
  *
  */
 
-
 declare(strict_types=1);
 
+use Session\Save;
 
 class Session
 {
@@ -65,9 +65,9 @@ class Session
         $driver = $config['driver'];
         self::$class = ucfirst($driver);
 
-        if( ! is_dir($path . self::$class))
+        if(! is_dir($path . self::$class))
         {
-            throw new RuntimeException('No driver found for ' . self::$class);
+            throw new \RuntimeException('No driver found for ' . self::$class);
         }
 
         self::$ssl_enabled = self::$initialized['encrypt_data'];
@@ -79,7 +79,7 @@ class Session
         
         if (self::$class != 'File' && self::$class != 'Cookie')
         {
-            if ( ! extension_loaded(self::$class))
+            if (! extension_loaded(self::$class))
             {
                 throw new \RuntimeException('The ' . self::$class . ' extension is missing. Please check your PHP configuration.');
             }
@@ -89,12 +89,12 @@ class Session
         $secured = $config['secure'];
         if ($secured !== true && $secured !== false && $secured !== null)
         {
-            throw new RuntimeException('config.secure expected value to be a boolean or null');
+            throw new \RuntimeException('config.secure expected value to be a boolean or null');
         }
         
         if ($secured == null)
         {
-            $secured = ( ! empty($_SERVER['HTTPS']) && strtolower($_SERVER['HTTPS'] == 'on'));
+            $secured = (! empty($_SERVER['HTTPS']) && strtolower($_SERVER['HTTPS'] == 'on'));
         }
 
 
@@ -129,9 +129,10 @@ class Session
     }
 
     /**
-     * Sets new session id
+     * Sets new session id.
      *
      * @param string $id
+     * @return string
      */
     public static function id(string $id = ''): string
     {
@@ -168,9 +169,10 @@ class Session
      * starts a new session
      *
      * @param string $namespace
-     * @return \Session\Save
+     * @param bool $auto_save (Alternative for https://github.com/Ghostff/Session/issues/4)
+     * @return Save
      */
-    public static function start(string $namespace = '__GLOBAL'): \Session\Save
+    public static function start(string $namespace = '__GLOBAL', bool $auto_save = true): Save
     {
         if (empty(self::$initialized))
         {
@@ -179,16 +181,40 @@ class Session
 
         self::$started = true;
         self::$initialized['namespace'] = $namespace;
-        return new \Session\Save(self::$initialized);
+        $handler = new Save(self::$initialized);
+        if ($auto_save)
+        {
+            register_shutdown_function(function () use ($handler)
+            {
+                self::autoCommit($handler);
+            });
+        }
+        return $handler;
     }
+
 
     /**
      * Reset all session configuration settings.
+     *
+     * @return Session
      */
     public static function reset(): self
     {
         self::$initialized = [];
         return new self;
+    }
+
+    /**
+     * Commits uncommitted changes.
+     *
+     * @param Save $handler
+     */
+    public static function autoCommit(Save $handler)
+    {
+        if (! $handler->all_was_committed)
+        {
+            $handler->commit();
+        }
     }
 
     /**
@@ -214,7 +240,7 @@ class Session
      */
     public static function decrypt(string $data): string
     {
-        if ( ! self::$initialized['encrypt_data'] || ! self::$ssl_enabled)
+        if (! self::$initialized['encrypt_data'] || ! self::$ssl_enabled)
         {
             return $data;
         }
@@ -238,7 +264,7 @@ class Session
         $iv  = substr($result, 32,16);
         $decrypted = openssl_decrypt($ct, 'AES-256-CBC', $key, 1, $iv);
 
-        return ( ! $decrypted) ? '' : $decrypted;
+        return (! $decrypted) ? '' : $decrypted;
     }
 
     /**
@@ -249,7 +275,7 @@ class Session
      */
     public static function encrypt(string $data): string
     {
-        if ( ! self::$initialized['encrypt_data'] || ! self::$ssl_enabled)
+        if (! self::$initialized['encrypt_data'] || ! self::$ssl_enabled)
         {
             return $data;
         }
