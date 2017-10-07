@@ -109,7 +109,7 @@ $session->destroy();
 $session->rotate($keep_old_session_data);
 ```
 
-## Change Log *v1.01.0*
+## Change Log *v1.02.0*
 **Initializing Session**
 
 A new optional argument(`$auto_save: true`) was added to the `start` method.
