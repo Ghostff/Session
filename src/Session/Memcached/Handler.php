@@ -56,7 +56,7 @@ class Handler implements \SessionHandlerInterface
 
     public function __construct(array $config)
     {
-        if ( ! isset($config['memcached']))
+        if (! isset($config['memcached']))
         {
             throw new \RuntimeException('No memcached configuration found in config file.');
         }
@@ -68,7 +68,7 @@ class Handler implements \SessionHandlerInterface
         $conn = new Memcached(($config['persistent_conn']) ? $config['name'] : null);
         $conn->setOptions([Memcached::OPT_LIBKETAMA_COMPATIBLE => true, Memcached::OPT_COMPRESSION => $config['compress']]);
 
-        if ( ! count($conn->getServerList()))
+        if (! count($conn->getServerList()))
         {
             $conn->addServers($config['servers']);
         }
@@ -95,7 +95,7 @@ class Handler implements \SessionHandlerInterface
 
     public function write($id, $data): bool
     {
-        if ( ! Session::$write)
+        if (! Session::$write)
         {
             return true;
         }

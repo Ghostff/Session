@@ -48,6 +48,8 @@ class Save
 {
     private $config = [];
 
+    public $all_was_committed = true;
+
     private function ip(): string
     {
         return $_SERVER['HTTP_CLIENT_IP'] ?? ($_SERVER['HTTP_X_FORWARDE‌​D_FOR'] ?? $_SERVER['REMOTE_ADDR']);
@@ -151,7 +153,7 @@ class Save
         session_write_close();
 
         #destroy session if unique identifier fails to sync
-        if ( ! $this->checkSession())
+        if (! $this->checkSession())
         {
             $this->destroy();
             return;
@@ -162,7 +164,7 @@ class Save
      * Starts session
      *
      * Save constructor.
-     * @param \stdClass $config
+     * @param array $config
      */
     public function __construct(array $config)
     {
@@ -193,6 +195,7 @@ class Save
         else
         {
             $this->config['session'][$namespace][$segment][$last][$name] = $value;
+            $this->all_was_committed = false;
         }
     }
 
@@ -218,7 +221,7 @@ class Save
             $this->config['last'] = 'set';
 
             $_last = ($last == 'remove') ? 'set' : $last;
-            if ( ! isset($this->config['session'][$namespace][$segment][$_last][$name]))
+            if (! isset($this->config['session'][$namespace][$segment][$_last][$name]))
             {
                 return null;
             }
@@ -291,6 +294,7 @@ class Save
         session_start();
         $_SESSION = $this->config['session'];
         session_write_close();
+        $this->all_was_committed = true;
     }
 
     /**

@@ -108,3 +108,13 @@ $session->destroy();
 ```php
 $session->rotate($keep_old_session_data);
 ```
+
+## Change Log *v1.01.0*
+**Initializing Session**
+
+A new optional argument(`$auto_save: true`) was added to the `start` method.
+```php
+$session = Session::start($optional_session_namespace, $auto_save);
+```
+Which allows uncommitted (forgot to commit) changes to saves automatically. Is set to `false`, uncommitted changes will be discarded.
+
