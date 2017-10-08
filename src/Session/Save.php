@@ -234,6 +234,7 @@ class Save
             {
                 $value = $this->config['session'][$namespace][$segment][$last][$name];
                 unset($this->config['session'][$namespace][$segment][$last][$name]);
+                $this->commit();
                 return $value;
             }
             if ($last == 'remove')
