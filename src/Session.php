@@ -52,14 +52,16 @@ class Session
     private static $ssl_enabled = true;
     
     public static $write = false;
+
+    private static $custom_config = null;
     
     public static $id = '';
 
     private static function init()
     {
         $DS = DIRECTORY_SEPARATOR;
-        $path = __DIR__ . $DS . 'Session' . $DS;
-        $config = include($path . 'config.php');
+        $path = __DIR__ . "{$DS}Session{$DS}";
+        $config = include(self::$custom_config ??  $path . 'config.php');
 
         self::$initialized = $config;
         $driver = $config['driver'];
@@ -166,13 +168,26 @@ class Session
 
 
     /**
+     * Sets a file where config settings will be loaded from.
+     *
+     * @param string $path_to_file
+     */
+    public static function setConfigFile(string $path_to_file)
+    {
+        if (! is_file($path_to_file))
+        {
+            throw new RuntimeException('config was not found in (' . $path_to_file . ') or not enough permission.');
+        }
+        self::$custom_config = $path_to_file;
+    }
+    /**
      * starts a new session
      *
      * @param string $namespace
      * @param bool $auto_commit (Alternative for https://github.com/Ghostff/Session/issues/4)
      * @return Save
      */
-    public static function start(string $namespace = '__GLOBAL', bool $auto_commit = true): Save
+    public static function start(string $namespace = null, bool $auto_commit = true): Save
     {
         if (empty(self::$initialized))
         {
@@ -180,7 +195,7 @@ class Session
         }
 
         self::$started = true;
-        self::$initialized['namespace'] = $namespace;
+        self::$initialized['namespace'] = $namespace ?? '__GLOBAL';
         $handler = new Save(self::$initialized);
         if ($auto_commit)
         {

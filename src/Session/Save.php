@@ -42,11 +42,17 @@ declare(strict_types=1);
 
 
 namespace Session;
+
+use RuntimeException;
 use Session;
 
 class Save
 {
     private $config = [];
+
+    private $internal = false;
+
+    private $checkpoint = 0;
 
     public $all_was_committed = true;
 
@@ -190,13 +196,55 @@ class Save
 
         if ($last == 'remove')
         {
-            throw new \RuntimeException('you cant use remove to set a value');
+            throw new RuntimeException('you cant use remove to set a value');
         }
         else
         {
             $this->config['session'][$namespace][$segment][$last][$name] = $value;
             $this->all_was_committed = false;
         }
+    }
+
+
+    /**
+     * Append data to an existing session. (cast existing to array)
+     *
+     * @param string $name
+     * @param array $values
+     * @return Save
+     */
+    public function __call(string $name, array $values): Save
+    {
+        $this->internal = true;
+        $called = $this->config['last'];
+
+        $stack = ($called == 'flash') ? ($this->{$called}->{$name} ?? []) : $this->{$name};
+
+        foreach ($values as $value)
+        {
+            if ($called == 'flash')
+            {
+                $stack[':bittr_queued'][$this->checkpoint] = $value;
+            }
+            else
+            {
+                $stack[$this->checkpoint] = $value;
+            }
+            $this->checkpoint++;
+        }
+
+        if ($called == 'flash')
+        {
+            $this->{$called}->{$name} = $stack;
+        }
+        else
+        {
+            $this->{$name} = $stack;
+        }
+
+        $this->internal = false;
+
+        return $this;
     }
 
     /**
@@ -233,8 +281,23 @@ class Save
             elseif ($last == 'flash')
             {
                 $value = $this->config['session'][$namespace][$segment][$last][$name];
-                unset($this->config['session'][$namespace][$segment][$last][$name]);
-                $this->commit();
+                if (! $this->internal)
+                {
+                    $flash =& $this->config['session'][$namespace][$segment][$last][$name];
+                    if (isset($flash[':bittr_queued']))
+                    {
+                        $value = array_shift($flash[':bittr_queued']);
+                        if (empty($flash[':bittr_queued']))
+                        {
+                            $flash = null;
+                        }
+                    }
+                    else
+                    {
+                        unset($flash);
+                    }
+                    $this->commit();
+                }
                 return $value;
             }
             if ($last == 'remove')
@@ -270,7 +333,7 @@ class Save
             }
             else
             {
-                throw new \RuntimeException('segment ' . $segment . ' does not exist.');
+                throw new RuntimeException('segment ' . $segment . ' does not exist.');
             }
         }
     }
@@ -304,11 +367,11 @@ class Save
      * @param bool $delete_old
      * @param bool $write_nd_close
      */
-    public function rotate(bool $delete_old = true, bool $write_nd_close = true)
+    public function rotate(bool $delete_old = false, bool $write_nd_close = true)
     {
         if (headers_sent($filename, $line_num))
         {
-            throw new \RuntimeException(sprintf('ID must be regenerated before any output is sent to the browser. (file: %s, line: %s)', $filename, $line_num));
+            throw new RuntimeException(sprintf('ID must be regenerated before any output is sent to the browser. (file: %s, line: %s)', $filename, $line_num));
         }
 
         session_start();
