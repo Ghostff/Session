@@ -40,12 +40,11 @@
 declare(strict_types=1);
 
 namespace Session\Cookie;
-use Session;
 
+use Session, SessionHandlerInterface;
 
-class Handler implements \SessionHandlerInterface
+class Handler implements SessionHandlerInterface
 {
-
     public function open($savePath, $sessionName)
     {
         return true;

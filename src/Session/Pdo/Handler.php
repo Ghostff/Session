@@ -37,28 +37,23 @@
  *
  */
 
-
 declare(strict_types=1);
 
 namespace Session\Pdo;
-use PDO, Session;
 
+use PDO, PDOException, RuntimeException, Session, SessionHandlerInterface;
 
-class Handler implements \SessionHandlerInterface
+class Handler implements SessionHandlerInterface
 {
-
     private $conn = null;
-
     private $table = null;
-    
     private $persistent = false;
-    
 
     public function __construct(array $config)
     {
         if (! isset($config['pdo']))
         {
-            throw new \RuntimeException('No pdo configuration found in config file.');
+            throw new RuntimeException('No pdo configuration found in config file.');
         }
 
         $config = $config['pdo'];
@@ -77,7 +72,7 @@ class Handler implements \SessionHandlerInterface
         {
             $this->conn->query('SELECT 1 FROM `' . $table . '` LIMIT 1');
         }
-        catch (\PDOException  $e)
+        catch (PDOException  $e)
         {
             $this->conn->query('CREATE TABLE `' . $table . '` (
               `id` varchar(250) NOT NULL,

@@ -44,17 +44,11 @@ use Session\Save;
 class Session
 {
     private static $initialized = [];
-
     private static $started = false;
-
     private static $class = null;
-
     private static $ssl_enabled = true;
-    
     public static $write = false;
-
     private static $custom_config = null;
-    
     public static $id = '';
 
     private static function init()
@@ -69,13 +63,13 @@ class Session
 
         if(! is_dir($path . self::$class))
         {
-            throw new \RuntimeException('No driver found for ' . self::$class);
+            throw new RuntimeException('No driver found for ' . self::$class);
         }
 
         self::$ssl_enabled = self::$initialized['encrypt_data'];
         if (self::$ssl_enabled && ! extension_loaded('openssl'))
         {
-            throw new \RuntimeException('The openssl extension is missing. Please check your PHP configuration.');
+            throw new RuntimeException('The openssl extension is missing. Please check your PHP configuration.');
         }
 
         
@@ -83,7 +77,7 @@ class Session
         {
             if (! extension_loaded(self::$class))
             {
-                throw new \RuntimeException('The ' . self::$class . ' extension is missing. Please check your PHP configuration.');
+                throw new RuntimeException('The ' . self::$class . ' extension is missing. Please check your PHP configuration.');
             }
         }
 
@@ -91,7 +85,7 @@ class Session
         $secured = $config['secure'];
         if ($secured !== true && $secured !== false && $secured !== null)
         {
-            throw new \RuntimeException('config.secure expected value to be a boolean or null');
+            throw new RuntimeException('config.secure expected value to be a boolean or null');
         }
         
         if ($secured == null)
@@ -147,11 +141,11 @@ class Session
         {
             if (self::$started)
             {
-                throw new \RuntimeException('Session is active. The session id must be set before Session::start().');
+                throw new RuntimeException('Session is active. The session id must be set before Session::start().');
             }
             elseif (headers_sent($filename, $line_num))
             {
-                throw new \RuntimeException(sprintf('ID must be set before any output is sent to the browser (file: %s, line: %s)', $filename, $line_num));
+                throw new RuntimeException(sprintf('ID must be set before any output is sent to the browser (file: %s, line: %s)', $filename, $line_num));
             }
             elseif (preg_match('/^[-,a-zA-Z0-9]{1,128}$/', $id) < 1)
             {
@@ -311,6 +305,7 @@ class Session
         $iv  = substr($salted, 32,16);
 
         $encrypted_data = openssl_encrypt($data, 'AES-256-CBC', $key, 1, $iv);
+
         return base64_encode($salt . $encrypted_data);
     }
 }

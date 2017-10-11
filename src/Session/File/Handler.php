@@ -39,12 +39,11 @@
 
 declare(strict_types=1);
 
-
 namespace Session\File;
-use Session;
 
+use Session, SessionHandlerInterface;
 
-class Handler implements \SessionHandlerInterface
+class Handler implements SessionHandlerInterface
 {
 
     private $savePath;

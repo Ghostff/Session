@@ -37,7 +37,6 @@
  *
  */
 
-
 declare(strict_types=1);
 
 
@@ -46,27 +45,58 @@ namespace Session;
 use RuntimeException;
 use Session;
 
+/**
+ * @property Save $flash
+ * @property Save $remove
+ */
 class Save
 {
+    /**
+     * @var array
+     */
     private $config = [];
 
+    /**
+     * @var bool
+     */
     private $internal = false;
 
-    private $checkpoint = 0;
+    /**
+     * @var array
+     */
+    private static $checkpoint = [];
 
+    /**
+     * @var bool
+     */
     public $all_was_committed = true;
 
+    /**
+     * Gets client IP address.
+     *
+     * @return string
+     */
     private function ip(): string
     {
         return $_SERVER['HTTP_CLIENT_IP'] ?? ($_SERVER['HTTP_X_FORWARDE‌​D_FOR'] ?? $_SERVER['REMOTE_ADDR']);
     }
 
-    private function browser()
+    /**
+     * Gets clients browser.
+     *
+     * @return string
+     */
+    private function browser(): string
     {
         #you can make this more sophisticated lol
-        return $_SERVER['HTTP_USER_AGENT'];
+        return $_SERVER['HTTP_USER_AGENT'] ?? '';
     }
 
+    /**
+     * Session validation.
+     *
+     * @return bool
+     */
     private function checkSession(): bool
     {
 
@@ -205,7 +235,6 @@ class Save
         }
     }
 
-
     /**
      * Append data to an existing session. (cast existing to array)
      *
@@ -220,17 +249,24 @@ class Save
 
         $stack = ($called == 'flash') ? ($this->{$called}->{$name} ?? []) : $this->{$name};
 
+        $key = "{$called}:{$name}";
+        if (! array_key_exists($key, self::$checkpoint))
+        {
+            self::$checkpoint[$key] = 0;
+        }
+
         foreach ($values as $value)
         {
             if ($called == 'flash')
             {
-                $stack[':bittr_queued'][$this->checkpoint] = $value;
+                $stack[':bittr_queued'][self::$checkpoint[$key]] = $value;
             }
             else
             {
-                $stack[$this->checkpoint] = $value;
+                $stack[self::$checkpoint[$key]] = $value;
             }
-            $this->checkpoint++;
+
+            self::$checkpoint[$key]++;
         }
 
         if ($called == 'flash')
@@ -386,6 +422,8 @@ class Save
     }
 
     /**
+     * Clears all data in a specific segment or current namespace.
+     *
      * Clears all the data is a specific namespace or segment
      * @param string $segment
      */
@@ -416,7 +454,10 @@ class Save
     }
 
     /**
+     * Checks if data exist is current namespace or segment.
+     *
      * @param string $name
+     * @param string|null $segment
      * @param bool $in_flash
      * @return bool
      */
