@@ -128,7 +128,7 @@ Which allows uncommitted (forgot to commit) changes to saves automatically. Is s
   #This method must be implemented before Session::start
   Session::setConfigPath('my/config/path/config.php');
   ```
- - A queue set method has been add
+ - A set queue has been added
  ```php
  $session->name = 'foo';
  $session->name = 'foo1';
