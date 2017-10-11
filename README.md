@@ -124,6 +124,10 @@ Which allows uncommitted (forgot to commit) changes to saves automatically. Is s
  - Default session driver is now set to `file`
  - Auto delete session after rotate is now defaulted to `false`.
   - A `setConfigPath` method has been added.
+  ```php
+  #This method must be implemented before Session::start
+  Session::setConfigPath('my/config/path/config.php');
+  ```
  - A queue set method has been add
  ```php
  $session->name = 'foo';
