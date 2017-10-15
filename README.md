@@ -120,8 +120,8 @@ Which allows uncommitted (forgot to commit) changes to saves automatically. Is s
 
 
 ## Change Log *v1.03.0*
- - Start now accept `null` arg as namespace
- - Default session driver is now set to `file`
+ - `start` method now accepts `null` arg as namespace.
+ - Default session driver is now set to `file`.
  - Auto delete session after rotate is now defaulted to `false`.
   - A `setConfigPath` method has been added.
   ```php
