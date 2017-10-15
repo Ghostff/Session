@@ -37,20 +37,33 @@
  *
  */
 
-
 declare(strict_types=1);
-
 
 namespace Session;
 
 class Segment
 {
+    /**
+     * @var null|string
+     */
     private $segment = null;
 
+    /**
+     * @var array|null
+     */
     private $config = null;
 
+    /**
+     * @var null
+     */
     private $handler = null;
 
+    /**
+     * Segment constructor.
+     * @param string $name
+     * @param array $config
+     * @param $handler
+     */
     public function __construct(string $name, array &$config, $handler)
     {
         $this->segment = 'segment:' . $name;
@@ -58,12 +71,21 @@ class Segment
         $this->handler = $handler;
     }
 
+    /**
+     * @param string $name
+     * @param $value
+     * @return mixed
+     */
     public function __set(string $name, $value)
     {
         $this->config['segment'] = $this->segment;
         return $this->handler->{$name} = $value;
     }
 
+    /**
+     * @param string $name
+     * @return mixed
+     */
     public function __get(string $name)
     {
         $this->config['segment'] = $this->segment;

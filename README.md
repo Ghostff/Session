@@ -19,7 +19,7 @@ Basic usage:
 ## Registering Error Handler (optional)
 ```php
 #This method must be implemented before Session::start
-Session::registerErrorHandler(function($error, $error_code)
+Session::registerErrorHandler(function(string $error, int $error_code)
 {
     #Debug::Log($error);
 });
@@ -117,4 +117,38 @@ A new optional argument(`$auto_save: true`) was added to the `start` method.
 $session = Session::start($optional_session_namespace, $auto_save);
 ```
 Which allows uncommitted (forgot to commit) changes to saves automatically. Is set to `false`, uncommitted changes will be discarded.
+
+
+## Change Log *v1.03.0*
+ - `start` method now accepts `null` arg as namespace.
+ - Default session driver is now set to `file`.
+ - Auto delete session after rotate is now defaulted to `false`.
+  - A `setConfigPath` method has been added.
+  ```php
+  #This method must be implemented before Session::start
+  Session::setConfigPath('my/config/path/config.php');
+  ```
+ - A set queue has been added
+ ```php
+ $session->name = 'foo';
+ $session->name = 'foo1';
+ 
+var_dump($session->name); # Outputs 'foo1'
+ 
+ $session->name('foo')
+ $session->name('foo1');
+ 
+ var_dump($session->name); # Outputs ['foo', 'foo1'];
+ 
+ # Array
+ $session->name = ['foo', 'bar', ...];
+ # is same as
+ $session->name('foo', 'bar', ...);
+ ```
+
+When flash are placed using the new queue method, they will be dispatched one after another on each request
+```php
+$session->flash->message('invalid 1', 'invalid 2');
+```
+With the above `invalid 1` will disptach on first load/reload and  `invalid 2` on second.
 

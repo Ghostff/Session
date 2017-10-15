@@ -37,28 +37,23 @@
  *
  */
 
-
 declare(strict_types=1);
 
 namespace Session\Redis;
-use Session, Redis;
 
+use Redis, RuntimeException, Session, SessionHandlerInterface;
 
-class Handler implements \SessionHandlerInterface
+class Handler implements SessionHandlerInterface
 {
-    private $config = [];
-
     private $conn = null;
-
     private $expire = 0;
-    
     private $name = null;
 
     public function __construct(array $config)
     {
         if (! isset($config['redis']))
         {
-            throw new \RuntimeException('No Redis configuration found in config file.');
+            throw new RuntimeException('No Redis configuration found in config file.');
         }
 
         $this->expire = $config['expiration'];
