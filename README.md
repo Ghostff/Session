@@ -150,5 +150,5 @@ When flash are placed using the new queue method, they will be dispatched one af
 ```php
 $session->flash->message('invalid 1', 'invalid 2');
 ```
-With the above `invalid 1` will disptached on first load/reload and  `invalid 2` on second.
+With the above `invalid 1` will be dispatched on first load/reload and  `invalid 2` on second.
 
