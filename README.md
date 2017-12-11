@@ -116,7 +116,7 @@ A new optional argument(`$auto_save: true`) was added to the `start` method.
 ```php
 $session = Session::start($optional_session_namespace, $auto_save);
 ```
-Which allows uncommitted (forgot to commit) changes to saves automatically. Is set to `false`, uncommitted changes will be discarded.
+Which allows uncommitted "forgot to commit" changes to saves automatically. If set to `false`, uncommitted changes will be discarded.
 
 
 ## Change Log *v1.03.0*
@@ -150,5 +150,5 @@ When flash are placed using the new queue method, they will be dispatched one af
 ```php
 $session->flash->message('invalid 1', 'invalid 2');
 ```
-With the above `invalid 1` will disptach on first load/reload and  `invalid 2` on second.
+With the above `invalid 1` will disptached on first load/reload and  `invalid 2` on second.
 
