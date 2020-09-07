@@ -1,19 +1,20 @@
 <?php return [
-    'driver'        => Session\File\Handler::class, # Name of session driver to use: [file|pdo|cookie|redis|memcached]
+    'driver'        => Session\File\Handler::class, # Name of session driver to use: Session\[File|MySql|Cookie|Redis|Memcached]\Handler::class
     'encrypt_data'  => false,                       # Allow encryption of session data.
     'salt_key'      => 'secret_salt_key',           # Encryption key. ineffective if 'encrypt_data' = false
 
+    # https://www.php.net/manual/en/session.configuration.php
     'start_options' => [
-        'name'              => 'SESS_ID',           # session name
-        'save_path'         => '',
-        'cache_limiter'     => 'private',
-        'cookie_secure'     => '',
-        'cookie_domain'     => '',
-        'cookie_path'       => '/',
-        'cookie_lifetime'   => '0',
-        'gc_maxlifetime'    => '1440',
-        'use_strict_mode'   => '1',
-        'gc_probability'    => '1',
+        'name'              => 'SESS_ID',           # Session name
+        'save_path'         => '',                  # This is the path where the files are created.
+        'cache_limiter'     => 'private',           # Cache control method used for session pages.
+        'cookie_secure'     => '',                  # Specifies whether cookies should only be sent over secure connections.
+        'cookie_domain'     => '',                  # Specifies the domain to set in the session cookie.
+        'cookie_path'       => '/',                 # Specifies path to set in the session cookie.
+        'cookie_lifetime'   => '0',                 # Specifies the lifetime of the cookie in seconds which is sent to the browser. The value 0 means "until the browser is closed."
+        'gc_maxlifetime'    => '1440',              # Specifies the number of seconds after which data will be seen as 'garbage' and potentially cleaned up.
+        'use_strict_mode'   => '1',                 # Specifies whether the module will use strict session id mode.
+        'gc_probability'    => '1',                 #
     ],
 
     'mysql'         => [
