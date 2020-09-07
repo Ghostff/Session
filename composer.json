@@ -11,7 +11,7 @@
         }
     ],
     "require": {
-		"php": ">=7.0.0"	
+		"php": ">=7.0.0"
 	},
 	"autoload" : {
 	    "classmap": [
@@ -20,8 +20,5 @@
 		"psr-4" : {
 		  	"Session\\" : "src/Session"
 		}
-    },
-    "require-dev": {
-        "ghostff/session": "^1.0"
     }
 }

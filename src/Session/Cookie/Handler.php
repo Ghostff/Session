@@ -43,8 +43,13 @@ namespace Session\Cookie;
 
 use Session, SessionHandlerInterface;
 
-class Handler implements SessionHandlerInterface
+class Handler extends Session\SetGet implements SessionHandlerInterface
 {
+    public function __construct(array $config)
+    {
+        parent::__construct($config['encrypt_data'], $config['salt_key']);
+    }
+
     public function open($savePath, $sessionName)
     {
         return true;
@@ -62,18 +67,16 @@ class Handler implements SessionHandlerInterface
             return '';
         }
 
-        return Session::decrypt($_COOKIE[$id]);
+        return $this->get($_COOKIE[$id]);
     }
 
     public function write($id, $data): bool
     {
-        if (! Session::$write)
-        {
-            return true;
-        }
-        Session::$write = false;
-        $_ = session_get_cookie_params();
-        return setcookie($id, Session::encrypt($data), $_['lifetime'], $_['path'], $_['domain'], $_['secure'], $_['httponly']);
+        $cookie_params              = session_get_cookie_params();
+        $cookie_params['expires']   = $cookie_params['lifetime'];
+        unset($cookie_params['lifetime']);
+
+        return setcookie($id, $this->set($data), $cookie_params);
     }
 
     public function destroy($id): bool

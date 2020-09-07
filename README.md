@@ -1,5 +1,5 @@
 # Session PHP(7+)
-PHP Session Manager (non-blocking, flash, segment, session encryption). Uses PHP [open_ssl](http://php.net/manual/en/book.openssl.php) for optional encrypt/decryption of session data.
+PHP Session Manager (non-blocking, flash, segment, session encryption). Uses PHP [open_ssl](http://php.net/manual/en/book.openssl.php) for **optional** encrypt/decryption of session data.
 
 ### Driver support  Scope
 ![file](https://img.shields.io/badge/FILE-completed-brightgreen.svg?style=flat-square)&nbsp;&nbsp;&nbsp;![cookie](https://img.shields.io/badge/COOKIE-completed-brightgreen.svg?style=flat-square)&nbsp;&nbsp;&nbsp;![pdo](https://img.shields.io/badge/PDO-completed-brightgreen.svg?style=flat-square)&nbsp;&nbsp;&nbsp;![memcached](https://img.shields.io/badge/MEMCACHED-completed-brightgreen.svg?style=flat-square)&nbsp;&nbsp;&nbsp;![redis](https://img.shields.io/badge/REDIS-active-brightgreen.svg?style=flat-square)&nbsp;&nbsp;&nbsp;[![license](https://img.shields.io/pypi/l/Django.svg?style=flat-square)]()&nbsp;&nbsp;&nbsp;[![Minimum PHP Version](https://img.shields.io/badge/php-%3E%3D%207.0-8892BF.svg?style=flat-square)](http://php.net/releases/7_0_0.php)
@@ -15,88 +15,114 @@ $ composer require ghostff/session
 }
 ```    
 
-Basic usage:
-## Registering Error Handler (optional)
+## Basic usage
 ```php
-#This method must be implemented before Session::start
-Session::registerErrorHandler(function(string $error, int $error_code)
-{
-    #Debug::Log($error);
-});
+# Start session with default default or specified configurations.
+$session = new Session(); 
+
+$session->set('email', 'foo@bar.com');
+
+echo $session->get('time');
 ```
 
-## Setting or getting session id *:void*
+## Configuration (optional)
 ```php
-#When setting ID, method must be implemented before Session::start
-Session::id(bin2hex(random_bytes(32)));
-
-#Get ID
-echo Session::id();
+# loads the default configuration "src/Session/default_config.php"
+Configuration::loadDefaultConfiguration();
+ 
+# use custom configuration file.
+Configuration::loadDefaultConfiguration('path/to/my/config.php');
+ 
+# overriding specific configuration settings
+Configuration::set(['encrypt_data' => true]);
 ```
 
 ## Initializing Session
 ```php
-$session = Session::start($optional_session_namespace);
+# Start session with default default or specified configurations.
+$session = new Session(); 
+
+$session = new Session(Configuration::set(['encrypt_data' => true]));
+
+# Start session with custom ID
+$session = new Session(null, bin2hex(random_bytes(32)));
 ```
 
-
-## Using Segment *:Segment*
+## Using Segment *:Session*
 ```php
- $segment = $session->segment($required_segment_name);
+ $segment = $session->segment('my_segment');
 ```
 
-## Setting Session Data
+## Retrieving Session ID  *:string*
 ```php
-$session->name = 'foo';
+echo $session->id();
+```
+
+## Committing changes *:void*
+```php
+# Opens, writes and closes session.
+$session->commit();
+```
+
+## Setting Session Data *:Session*
+```php
+$session->set('fname', 'foo');
 # Setting Segment
-$segment->name = 'bar';
+$segment->set('name', 'bar');
 
 # Setting Flash
-$session->flash->name = 'foobar';
+$session->setFlash('name', 'foobar');
 # Setting Segment Flash
-$segment->flash->name = 'barfoo';
+$segment->setFlash('name', 'barfoo');
 
 $session->commit();
 ```
 
-## Retrieving Session Data
+## Retrieving Session Data *:mixed*
 ```php
-echo $session->name; # outputs foo
+echo $session->get('name'); # outputs foo
+echo $session->getOrDefault('unset_value', 'not found'); # outputs not found
 # Retrieving Segment
-echo $segment->name; # outputs bar
+echo $segment->get('name'); # outputs bar
+echo $segment->getOrDefault('unset_value', 'not found'); # outputs not found
 
 # Retrieving Flash
-echo $session->flash->name; # outputs foobar
+echo $session->getFlash('name'); # outputs foobar
+echo $session->getFlashOrDefault('name', 'not found'); # outputs not found
 # Retrieving Segment Flash
-echo $segment->flash->name; # outputs barfoo
+echo $segment->getFlash('name'); # outputs barfoo
+echo $segment->getFlashOrDefault('name', 'not found'); # outputs not found
 ```
 
-## Removing Session Data
+## Removing Session Data *:Session*
 ```php
-$session->remove->name;
+$session->del('name');
 # Removing Segment
-$segment->remove->name;
+$segment->del('name');
 
 # Removing Flash
-$session->remove->flash->name;
+$session->delFlash('name');
 # Removing Segment Flash
-$segment->remove->flash->name;
+$segment->delFlash('name');
 ```
 
 ## Retrieve all session or segment data *:array*
 ```php
-$session->all($optional_segment);
+$session->getAll();
+# Retrieve only in specified segment.
+$session->getAll('my_segment_name');
 ```
 
 ## Check if variable exist in current session namespace *:bool*
 ```php
-$session->exist($variable_name, $option_segment, $in_flash);
+$session->exist('name');
+# Search flashes
+$session->exist('name', true);
 ```
 
-
-## Removing active session or segment data *:void*
+## Removing all data in current segment *:Session*
 ```php
-$session->clear($optional_segment);
+$session->clear();
 ```
 
 ## Destroying session *:void*
@@ -106,49 +132,25 @@ $session->destroy();
 
 ## Regenerate session ID *:void*
 ```php
-$session->rotate($keep_old_session_data);
+$session->rotate();
+# Delete the old associated session file or not
+$session->rotate(true);
 ```
 
-## Change Log *v1.02.0*
-**Initializing Session**
-
-A new optional argument(`$auto_save: true`) was added to the `start` method.
+## Setting Queued Session Data *:Session*
 ```php
-$session = Session::start($optional_session_namespace, $auto_save);
+$session->push('age', 10)
+        ->push('age', 20)
+        ->push('age', 30)
+        ->push('age', 40);
 ```
-Which allows uncommitted "forgot to commit" changes to saves automatically. If set to `false`, uncommitted changes will be discarded.
 
-
-## Change Log *v1.03.0*
- - `start` method now accepts `null` arg as namespace.
- - Default session driver is now set to `file`.
- - Auto delete session after rotate is now defaulted to `false`.
-  - A `setConfigPath` method has been added.
-  ```php
-  #This method must be implemented before Session::start
-  Session::setConfigPath('my/config/path/config.php');
-  ```
- - A set queue has been added
- ```php
- $session->name = 'foo';
- $session->name = 'foo1';
- 
-var_dump($session->name); # Outputs 'foo1'
- 
- $session->name('foo')
- $session->name('foo1');
- 
- var_dump($session->name); # Outputs ['foo', 'foo1'];
- 
- # Array
- $session->name = ['foo', 'bar', ...];
- # is same as
- $session->name('foo', 'bar', ...);
- ```
-
-When flash are placed using the new queue method, they will be dispatched one after another on each request
+## Retrieving Queued Session Data *:mixed*
 ```php
-$session->flash->message('invalid 1', 'invalid 2');
+echo $session->pop('age');  # outputs 10
+echo $session->pop('age');  # outputs 20
+echo $session->pop('age');  # outputs 30
+echo $session->pop('age');  # outputs 40
 ```
-With the above `invalid 1` will be dispatched on first load/reload and  `invalid 2` on second.
+
 

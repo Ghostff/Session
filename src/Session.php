@@ -1,149 +1,31 @@
 <?php
-
-/**
- * Bittr
- *
- * @license
- *
- * New BSD License
- *
- * Copyright (c) 2017, ghostff community
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *      1. Redistributions of source code must retain the above copyright
- *      notice, this list of conditions and the following disclaimer.
- *      2. Redistributions in binary form must reproduce the above copyright
- *      notice, this list of conditions and the following disclaimer in the
- *      documentation and/or other materials provided with the distribution.
- *      3. All advertising materials mentioning features or use of this software
- *      must display the following acknowledgement:
- *      This product includes software developed by the ghostff.
- *      4. Neither the name of the ghostff nor the
- *      names of its contributors may be used to endorse or promote products
- *      derived from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY ghostff ''AS IS'' AND ANY
- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL GHOSTFF COMMUNITY BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- */
-
 declare(strict_types=1);
 
-use Session\Save;
+use Session\Configuration;
 
 class Session
 {
-    private static $initialized = [];
-    private static $started = false;
-    private static $class = null;
-    private static $ssl_enabled = true;
-    public static $write = false;
-    private static $custom_config = null;
-    public static $id = '';
+    const DEFAULT_SEGMENT  = ':';
 
-    private static function init()
-    {
-        $DS = DIRECTORY_SEPARATOR;
-        $path = __DIR__ . "{$DS}Session{$DS}";
-        $config = include(self::$custom_config ??  $path . 'config.php');
+    private $data          = [];
+    private $segment       = self::DEFAULT_SEGMENT;
+    private $changed       = false;
+    private $id            = '';
+    private $name          = '';
+    private $cookie_params = [];
 
-        self::$initialized = $config;
-        $driver = $config['driver'];
-        self::$class = ucfirst($driver);
-
-        if(! is_dir($path . self::$class))
-        {
-            throw new RuntimeException('No driver found for ' . self::$class);
-        }
-
-        self::$ssl_enabled = self::$initialized['encrypt_data'];
-        if (self::$ssl_enabled && ! extension_loaded('openssl'))
-        {
-            throw new RuntimeException('The openssl extension is missing. Please check your PHP configuration.');
-        }
-
-        
-        if (self::$class != 'File' && self::$class != 'Cookie')
-        {
-            if (! extension_loaded(self::$class))
-            {
-                throw new RuntimeException('The ' . self::$class . ' extension is missing. Please check your PHP configuration.');
-            }
-        }
-
-        session_cache_limiter($config['cache_limiter']);
-        $secured = $config['secure'];
-        if ($secured !== true && $secured !== false && $secured !== null)
-        {
-            throw new RuntimeException('config.secure expected value to be a boolean or null');
-        }
-        
-        if ($secured == null)
-        {
-            $secured = (! empty($_SERVER['HTTPS']) && strtolower($_SERVER['HTTPS'] == 'on'));
-        }
-
-
-        ini_set('session.save_handler', ($driver == 'file') ? 'files' : (($driver == 'memcached' || $driver == 'redis') ? $driver : 'user'));
-        ini_set('session.use_cookies', '1');
-        ini_set('session.gc_maxlifetime', $config['max_life_time']);
-        ini_set('session.gc_probability', $config['probability']);
-        $current = $config['expiration'];
-        $config['expiration'] = ($current == 0) ? 0 : time() + $current;
-        session_set_cookie_params($config['expiration'], $config['path'], $config['domain'], $secured, $config['http_only']);
-
-        if (self::$class == 'File')
-        {
-            $save_path = $config[$driver]['save_path'];
-            if (is_dir($save_path))
-            {
-                session_save_path($save_path);
-            }
-            else
-            {
-                throw new RuntimeException(sprintf('save_path (%s) does not exist', $save_path));
-            }
-        }
-        elseif ( self::$class == 'Memcached' || self::$class == 'Redis')
-        {
-             session_save_path($config[$driver]['save_path']);
-        }
-        
-        $class = '\Session\\' . self::$class . '\Handler';
-        session_set_save_handler(new $class(self::$initialized), true);
-
-    }
 
     /**
-     * Sets new session id.
+     * Session constructor.
      *
-     * @param string $id
-     * @return string
+     * @param \Session\Configuration|null $configuration
+     * @param string|null                 $id
      */
-    public static function id(string $id = ''): string
+    public function __construct(Configuration $configuration = null, string $id = null)
     {
-        if (empty(self::$initialized))
+        if ($id != null)
         {
-            self::init();
-        }
-
-        if ($id != '')
-        {
-            if (self::$started)
-            {
-                throw new RuntimeException('Session is active. The session id must be set before Session::start().');
-            }
-            elseif (headers_sent($filename, $line_num))
+            if (headers_sent($filename, $line_num))
             {
                 throw new RuntimeException(sprintf('ID must be set before any output is sent to the browser (file: %s, line: %s)', $filename, $line_num));
             }
@@ -156,156 +38,295 @@ class Session
                 session_id($id);
             }
         }
-        
-        return self::$id;
-    }
 
+        // Reset session parameter is id or configuration is different.
+        $options = ($configuration ?? Configuration::getConfigurations())->check();
+        session_start($options + ['read_and_close' => true]);
 
-    /**
-     * Sets a file where config settings will be loaded from.
-     *
-     * @param string $path_to_file
-     */
-    public static function setConfigFile(string $path_to_file)
-    {
-        if (! is_file($path_to_file))
-        {
-            throw new RuntimeException('config was not found in (' . $path_to_file . ') or not enough permission.');
-        }
-        self::$custom_config = $path_to_file;
-    }
-    /**
-     * starts a new session
-     *
-     * @param string $namespace
-     * @param bool $auto_commit (Alternative for https://github.com/Ghostff/Session/issues/4)
-     * @return Save
-     */
-    public static function start(string $namespace = null, bool $auto_commit = true): Save
-    {
-        if (empty(self::$initialized))
-        {
-            self::init();
-        }
+        $this->id                         = session_id();
+        $this->data                       = $_SESSION;
+        $this->cookie_params              = session_get_cookie_params();
+        $this->name                       = $options['name'];
+        $this->cookie_params['expires']   = $this->cookie_params['lifetime'];
+        unset($this->cookie_params['lifetime']);
 
-        self::$started = true;
-        self::$initialized['namespace'] = $namespace ?? '__GLOBAL';
-        $handler = new Save(self::$initialized);
-        if ($auto_commit)
-        {
-            register_shutdown_function(function () use ($handler)
-            {
-                self::autoCommit($handler);
-            });
-        }
-        return $handler;
-    }
-
-
-    /**
-     * Reset all session configuration settings.
-     *
-     * @return Session
-     */
-    public static function reset(): self
-    {
-        self::$initialized = [];
-        return new self;
+        setcookie($this->name, $this->id, $this->cookie_params);
     }
 
     /**
-     * Commits uncommitted changes.
+     * Sets new session id.
      *
-     * @param Save $handler
+     * @param string $id
+     * @return string
      */
-    public static function autoCommit(Save $handler)
+    public function id(): string
     {
-        if (! $handler->all_was_committed)
+        return $this->id;
+    }
+
+    /**
+     * Create a new storage segment.
+     *
+     * @param string $name  The name of the segment.
+     *
+     * @return \Session
+     */
+    public function segment(string $name): Session
+    {
+        $session = new self();
+        $session->data =& $this->data;
+        $session->segment = $name;
+
+        return $session;
+    }
+
+    /**
+     * Sets a value in current segment storage.
+     *
+     * @param string $name  The name of the value to set.
+     * @param mixed  $value The value.
+     *
+     * @return $this
+     */
+    public function set(string $name, $value): Session
+    {
+        $this->data[$this->segment][0][$name] = $value;
+        $this->changed = true;
+
+        return $this;
+    }
+
+    /**
+     * @param string $name
+     * @param        $value
+     *
+     * @return $this
+     */
+    public function push(string $name, $value): Session
+    {
+        $values = $this->getOrDefault($name, []);
+        if ( ! is_array($values))
         {
-            $handler->commit();
+            $values = [$values];
+        }
+
+        $values[] = $value;
+
+        return $this->set($name, $values);
+    }
+
+    /**
+     * Gets a value from current segment storage.
+     *
+     * @param string $name  The name of the value to retrieve.
+     *
+     * @return mixed
+     */
+    public function get(string $name)
+    {
+        if ( ! isset($this->data[$this->segment][0][$name])) {
+            throw new RuntimeException("\"{$name}\" does not exist in current session segment.");
+        }
+
+        return $this->data[$this->segment][0][$name];
+    }
+
+    /**
+     * Removes a value from segment storage.
+     *
+     * @param string $name
+     *
+     * @return $this
+     */
+    public function del(string $name): Session
+    {
+        unset($this->data[$this->segment][0][$name]);
+        $this->changed = true;
+
+        return $this;
+    }
+
+    /**
+     * Removes a value from flash segment storage.
+     *
+     * @param string $name
+     *
+     * @return $this
+     */
+    public function delFlash(string $name): Session
+    {
+        unset($this->data[$this->segment][1][$name]);
+        $this->changed = true;
+
+        return $this;
+    }
+
+    public function pop(string $name)
+    {
+        $this->changed = true;
+
+        return array_pop($this->data[$this->segment][0][$name]);
+    }
+
+    /**
+     * Get a value from current segment storage or default to $default
+     *  if specified name was not found.
+     *
+     * @param string $name      The name of the value to retrieve.
+     * @param null   $default   The fallback value if $name value was not found.
+     *
+     * @return mixed|null
+     */
+    public function getOrDefault(string $name, $default = null)
+    {
+        return $this->data[$this->segment][0][$name] ?? $default;
+    }
+
+    /**
+     * Sets flash a value in current segment storage.
+     *  Note: Flash values are deleted after retrieval.
+     *
+     * @param string $name  The name of the value to set.
+     * @param mixed  $value The value.
+     *
+     * @return $this
+     */
+    public function setFlash(string $name, $value): Session
+    {
+        $this->data[$this->segment][1][$name] = $value;
+        $this->changed = true;
+
+        return $this;
+    }
+
+    /**
+     * Gets a flash value from current segment storage.
+     *
+     * @param string $name  The name of the value to retrieve.
+     *
+     * @return mixed
+     */
+    public function getFlash(string $name)
+    {
+        if ( ! isset($this->data[$this->segment][1][$name])) {
+            throw new RuntimeException("flash(\"{$name}\") does not exist in current session segment.");
+        }
+
+        $value =  $this->data[$this->segment][1][$name];
+        unset($this->data[$this->segment][1][$name]);
+        $this->changed = true;
+
+        return $value;
+    }
+
+    /**
+     * Get a flash value from current segment storage or default to $default
+     *  if specified name was not found.
+     *
+     * @param string $name      The name of the value to retrieve.
+     * @param null   $default   The fallback value if $name value was not found.
+     *
+     * @return mixed|null
+     */
+    public function getFlashOrDefault(string $name, $default = null)
+    {
+        $value =  $this->data[$this->segment][1][$name] ?? $default;
+        unset($this->data[$this->segment][1][$name]);
+        $this->changed = true;
+
+        return $value;
+    }
+
+    /**
+     * Gets all storage data.
+     *
+     * @param string|null $segment If specified on the storage for specified segment is returned.
+     *
+     * @return array
+     */
+    public function getAll(string $segment = null): array
+    {
+        if ($segment == null) {
+            return $this->data;
+        }
+
+        return $this->data[$segment];
+    }
+
+    /**
+     * Checks if value exist in current segment storage.
+     *
+     * @param string $name      The name to search for.
+     * @param bool   $in_flash  If specified, search will be matched against flash values.
+     *
+     * @return bool
+     */
+    public function exist(string $name, bool $in_flash = false): bool
+    {
+        return isset($this->data[$this->segment][$in_flash ? 0 : 1][$name]);
+    }
+
+    /**
+     * Generate a new session identifier
+     *
+     * @param bool $delete_old
+     *
+     * @return \Session
+     */
+    public function rotate(bool $delete_old = false): Session
+    {
+        if (headers_sent($filename, $line_num))
+        {
+            throw new RuntimeException(sprintf('ID must be regenerated before any output is sent to the browser. (file: %s, line: %s)', $filename, $line_num));
+        }
+
+        session_start();
+        session_regenerate_id($delete_old);
+        $this->id = session_id();
+        session_write_close();
+
+        return $this;
+    }
+
+    /**
+     * Clear all data in current segment storage.
+     *
+     * @return $this
+     */
+    public function clear(): Session
+    {
+        $this->data[$this->segment] = [];
+        $this->changed = true;
+
+        return $this;
+    }
+
+    public function commit()
+    {
+        if ($this->changed) {
+            $this->changed = false;
+            session_start();
+            $_SESSION = $this->data;
+            session_write_close();
         }
     }
 
     /**
-     * Allows error custom error handling
-     *
-     * @param callable $error_handler
+     * Destroy the session data including namespace and segments
      */
-    public static function registerErrorHandler(callable $error_handler)
+    public function destroy()
     {
-        if (empty(self::$initialized))
-        {
-            self::init();
-        }
+        session_start();
+        $_SESSION = [];
+        @session_destroy();
+        session_write_close();
 
-        self::$initialized['error_handler'] = $error_handler;
+        $this->cookie_params['expires'] = time() - 42000;
+        setcookie($this->name, '', $this->cookie_params);
     }
 
-    /**
-     * decrypt AES 256
-     *
-     * @param string $data
-     * @return string data
-     */
-    public static function decrypt(string $data): string
+    public function __destruct()
     {
-        if (! self::$initialized['encrypt_data'] || ! self::$ssl_enabled)
-        {
-            return $data;
-        }
-
-        $password = self::$initialized['key'];
-        $data = base64_decode($data);
-        $salt = substr($data, 0, 16);
-        $ct = substr($data, 16);
-
-        $rounds = 3; // depends on key length
-        $data00 = $password . $salt;
-        $hash = [];
-        $hash[0] = hash('sha256', $data00, true);
-        $result = $hash[0];
-        for ($i = 1; $i < $rounds; $i++)
-        {
-            $hash[$i] = hash('sha256', $hash[$i - 1] . $data00, true);
-            $result .= $hash[$i];
-        }
-        $key = substr($result, 0, 32);
-        $iv  = substr($result, 32,16);
-        $decrypted = openssl_decrypt($ct, 'AES-256-CBC', $key, 1, $iv);
-
-        return (! $decrypted) ? '' : $decrypted;
-    }
-
-    /**
-     * crypt AES 256
-     *
-     * @param string $data
-     * @return string encrypted data
-     */
-    public static function encrypt(string $data): string
-    {
-        if (! self::$initialized['encrypt_data'] || ! self::$ssl_enabled)
-        {
-            return $data;
-        }
-
-        $password = self::$initialized['key'];
-        // Set a random salt
-        $salt = openssl_random_pseudo_bytes(16);
-        $salted = '';
-        $dx = '';
-        // Salt the key(32) and iv(16) = 48
-        while (strlen($salted) < 48)
-        {
-            $dx = hash('sha256', $dx . $password . $salt, true);
-            $salted .= $dx;
-        }
-
-        $key = substr($salted, 0, 32);
-        $iv  = substr($salted, 32,16);
-
-        $encrypted_data = openssl_encrypt($data, 'AES-256-CBC', $key, 1, $iv);
-
-        return base64_encode($salt . $encrypted_data);
+        $this->commit();
     }
 }
