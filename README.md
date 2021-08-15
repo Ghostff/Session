@@ -22,7 +22,7 @@ $session = new Session();
 
 $session->set('email', 'foo@bar.com');
 
-echo $session->get('time');
+echo $session->get('email');
 ```
 
 ## Configuration (optional)
