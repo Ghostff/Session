@@ -21,22 +21,18 @@ class Session
      * @param \Session\Configuration|null $configuration
      * @param string|null                 $id
      */
-    public function __construct(Configuration $configuration = null, string $id = null)
+    public function __construct(?Configuration $configuration = null, ?string $id = null)
     {
-        if ($id != null)
-        {
-            if (headers_sent($filename, $line_num))
-            {
+        if ($id !== null) {
+            if (headers_sent($filename, $line_num)) {
                 throw new RuntimeException(sprintf('ID must be set before any output is sent to the browser (file: %s, line: %s)', $filename, $line_num));
             }
-            elseif (preg_match('/^[-,a-zA-Z0-9]{1,128}$/', $id) < 1)
-            {
+            if (preg_match('/^[-,a-zA-Z0-9]{1,128}$/', $id) < 1) {
                 throw new \InvalidArgumentException('Invalid Session ID.');
             }
-            else
-            {
-                session_id($id);
-            }
+
+            session_id($id);
+        }
         }
 
         // Reset session parameter is id or configuration is different.
@@ -244,7 +240,7 @@ class Session
      *
      * @return array
      */
-    public function getAll(string $segment = null): array
+    public function getAll(?string $segment = null): array
     {
         if ($segment == null) {
             return $this->data;
