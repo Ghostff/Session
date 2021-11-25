@@ -72,8 +72,8 @@ class Handler extends Session\SetGet implements SessionHandlerInterface
 
     public function write($id, $data): bool
     {
-        $cookie_params              = session_get_cookie_params();
-        $cookie_params['expires']   = $cookie_params['lifetime'];
+        $cookie_params            = session_get_cookie_params();
+        $cookie_params['expires'] = $cookie_params['lifetime'];
         unset($cookie_params['lifetime']);
 
         return setcookie($id, $this->set($data), $cookie_params);

@@ -21,8 +21,8 @@ class Handler extends Session\SetGet implements SessionHandlerInterface
 
         parent::__construct($config['encrypt_data'], $config['salt_key']);
 
-        $this->name     = $config['name'];
-        $config         = $config['memcached'];
+        $this->name = $config['name'];
+        $config     = $config['memcached'];
 
         ini_set('session.save_handler', 'memcached');
         ini_set('session.save_path', $config['save_path']);
@@ -36,7 +36,7 @@ class Handler extends Session\SetGet implements SessionHandlerInterface
         }
 
         $this->conn = $conn;
-        $conn = null;
+        $conn       = null;
     }
 
     public function open($savePath, $sessionName): bool

@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Session;
@@ -57,7 +58,7 @@ class SetGet
         }
 
         $key            = substr($salted, 0, 32);
-        $iv             = substr($salted, 32,16);
+        $iv             = substr($salted, 32, 16);
         $encrypted_data = openssl_encrypt($data, 'AES-256-CBC', $key, 1, $iv);
 
         return base64_encode("{$salt}{$encrypted_data}");
@@ -77,14 +78,14 @@ class SetGet
             return $data;
         }
 
-        $data       = base64_decode($data);
-        $salt       = substr($data, 0, 16);
-        $ct         = substr($data, 16);
-        $rounds     = 3; // depends on key length
-        $data00     = "{$this->key}{$salt}";
-        $hash       = [];
-        $hash[0]    = hash('sha256', $data00, true);
-        $result     = $hash[0];
+        $data    = base64_decode($data, true);
+        $salt    = substr($data, 0, 16);
+        $ct      = substr($data, 16);
+        $rounds  = 3; // depends on key length
+        $data00  = "{$this->key}{$salt}";
+        $hash    = [];
+        $hash[0] = hash('sha256', $data00, true);
+        $result  = $hash[0];
 
         for ($i = 1; $i < $rounds; $i++)
         {
@@ -92,9 +93,9 @@ class SetGet
             $result .= $hash[$i];
         }
 
-        $key        = substr($result, 0, 32);
-        $iv         = substr($result, 32,16);
-        $decrypted  = openssl_decrypt($ct, 'AES-256-CBC', $key, 1, $iv);
+        $key       = substr($result, 0, 32);
+        $iv        = substr($result, 32, 16);
+        $decrypted = openssl_decrypt($ct, 'AES-256-CBC', $key, 1, $iv);
 
         return ($decrypted === false) ? '' : $decrypted;
     }

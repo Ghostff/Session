@@ -18,6 +18,7 @@ class Handler extends Session\SetGet implements SessionHandlerInterface
     public function open($savePath, $sessionName): bool
     {
         $this->savePath = $savePath;
+
         return true;
     }
 

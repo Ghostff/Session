@@ -16,12 +16,12 @@ class Handler extends Session\SetGet implements SessionHandlerInterface
     {
         parent::__construct($config['encrypt_data'], $config['salt_key']);
 
-        $config             = $config['mysql'];
-        $table              = $config['table'] ?? 'session';
-        $this->table        = $table;
-        $this->persistent   = $config['persistent_conn'];
-        $dsn                = "{$config['driver']}:host={$config['host']};dbname={$config['db_name']}";
-        $this->conn         = new PDO($dsn,  $config['db_user'], $config['db_pass'], [
+        $config           = $config['mysql'];
+        $table            = $config['table'] ?? 'session';
+        $this->table      = $table;
+        $this->persistent = $config['persistent_conn'];
+        $dsn              = "{$config['driver']}:host={$config['host']};dbname={$config['db_name']}";
+        $this->conn       = new PDO($dsn, $config['db_user'], $config['db_pass'], [
             PDO::ATTR_PERSISTENT => $this->persistent,
             PDO::ATTR_ERRMODE    => PDO::ERRMODE_EXCEPTION
         ]);
@@ -53,13 +53,13 @@ class Handler extends Session\SetGet implements SessionHandlerInterface
 
     public function read($id): string
     {
-        $data = '';
+        $data      = '';
         $statement = $this->conn->prepare("SELECT `data` FROM `{$this->table}` WHERE `id` = :id");
         $statement->bindParam(':id', $id, PDO::PARAM_STR);
         if ($statement->execute())
         {
             $result = $statement->fetch();
-            $data = $result['data'] ?? '';
+            $data   = $result['data'] ?? '';
         }
         #close
         $statement = null;
@@ -75,6 +75,7 @@ class Handler extends Session\SetGet implements SessionHandlerInterface
         $completed = $statement->execute();
         #close
         $statement = null;
+
         return $completed;
     }
 
@@ -85,6 +86,7 @@ class Handler extends Session\SetGet implements SessionHandlerInterface
         $completed = $statement->execute();
         #close
         $statement = null;
+
         return $completed;
     }
 
@@ -96,6 +98,7 @@ class Handler extends Session\SetGet implements SessionHandlerInterface
         $completed = $statement->execute();
         #close
         $statement = null;
+
         return $completed;
     }
 }

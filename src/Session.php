@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 use Session\Configuration;
@@ -43,11 +44,11 @@ class Session
         $options = ($configuration ?? Configuration::getConfigurations())->check();
         session_start($options + ['read_and_close' => true]);
 
-        $this->id                         = session_id();
-        $this->data                       = $_SESSION;
-        $this->cookie_params              = session_get_cookie_params();
-        $this->name                       = $options['name'];
-        $this->cookie_params['expires']   = $this->cookie_params['lifetime'];
+        $this->id                       = session_id();
+        $this->data                     = $_SESSION;
+        $this->cookie_params            = session_get_cookie_params();
+        $this->name                     = $options['name'];
+        $this->cookie_params['expires'] = $this->cookie_params['lifetime'];
         unset($this->cookie_params['lifetime']);
 
         setcookie($this->name, $this->id, $this->cookie_params);
@@ -67,14 +68,14 @@ class Session
     /**
      * Create a new storage segment.
      *
-     * @param string $name  The name of the segment.
+     * @param string $name The name of the segment.
      *
      * @return \Session
      */
     public function segment(string $name): Session
     {
-        $session = new self();
-        $session->data =& $this->data;
+        $session          = new self();
+        $session->data    = &$this->data;
         $session->segment = $name;
 
         return $session;
@@ -91,7 +92,7 @@ class Session
     public function set(string $name, $value): Session
     {
         $this->data[$this->segment][0][$name] = $value;
-        $this->changed = true;
+        $this->changed                        = true;
 
         return $this;
     }
@@ -118,7 +119,7 @@ class Session
     /**
      * Gets a value from current segment storage.
      *
-     * @param string $name  The name of the value to retrieve.
+     * @param string $name The name of the value to retrieve.
      *
      * @return mixed
      */
@@ -172,8 +173,8 @@ class Session
      * Get a value from current segment storage or default to $default
      *  if specified name was not found.
      *
-     * @param string $name      The name of the value to retrieve.
-     * @param null   $default   The fallback value if $name value was not found.
+     * @param string $name    The name of the value to retrieve.
+     * @param null   $default The fallback value if $name value was not found.
      *
      * @return mixed|null
      */
@@ -194,7 +195,7 @@ class Session
     public function setFlash(string $name, $value): Session
     {
         $this->data[$this->segment][1][$name] = $value;
-        $this->changed = true;
+        $this->changed                        = true;
 
         return $this;
     }
@@ -202,7 +203,7 @@ class Session
     /**
      * Gets a flash value from current segment storage.
      *
-     * @param string $name  The name of the value to retrieve.
+     * @param string $name The name of the value to retrieve.
      *
      * @return mixed
      */
@@ -212,7 +213,7 @@ class Session
             throw new RuntimeException("flash(\"{$name}\") does not exist in current session segment.");
         }
 
-        $value =  $this->data[$this->segment][1][$name];
+        $value = $this->data[$this->segment][1][$name];
         unset($this->data[$this->segment][1][$name]);
         $this->changed = true;
 
@@ -223,14 +224,14 @@ class Session
      * Get a flash value from current segment storage or default to $default
      *  if specified name was not found.
      *
-     * @param string $name      The name of the value to retrieve.
-     * @param null   $default   The fallback value if $name value was not found.
+     * @param string $name    The name of the value to retrieve.
+     * @param null   $default The fallback value if $name value was not found.
      *
      * @return mixed|null
      */
     public function getFlashOrDefault(string $name, $default = null)
     {
-        $value =  $this->data[$this->segment][1][$name] ?? $default;
+        $value = $this->data[$this->segment][1][$name] ?? $default;
         unset($this->data[$this->segment][1][$name]);
         $this->changed = true;
 
@@ -296,7 +297,7 @@ class Session
     public function clear(): Session
     {
         $this->data[$this->segment] = [];
-        $this->changed = true;
+        $this->changed              = true;
 
         return $this;
     }
