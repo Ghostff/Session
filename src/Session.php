@@ -5,14 +5,16 @@ use Session\Configuration;
 
 class Session
 {
-    const DEFAULT_SEGMENT  = ':';
+    public const DEFAULT_SEGMENT  = ':';
+    public const SESSION_INDEX    = 0;
+    public const FLASH_INDEX      = 1;
 
-    private $data          = [];
-    private $segment       = self::DEFAULT_SEGMENT;
-    private $changed       = false;
-    private $id            = '';
-    private $name          = '';
-    private $cookie_params = [];
+    private array  $data          = [];
+    private string $segment       = self::DEFAULT_SEGMENT;
+    private bool   $changed       = false;
+    private string $id            = '';
+    private string $name          = '';
+    private array  $cookie_params = [];
 
 
     /**
@@ -56,7 +58,6 @@ class Session
     /**
      * Sets new session id.
      *
-     * @param string $id
      * @return string
      */
     public function id(): string
@@ -75,6 +76,7 @@ class Session
     {
         $session = new self();
         $session->data =& $this->data;
+        $session->changed =& $this->changed;
         $session->segment = $name;
 
         return $session;
@@ -90,7 +92,7 @@ class Session
      */
     public function set(string $name, $value): Session
     {
-        $this->data[$this->segment][0][$name] = $value;
+        $this->data[$this->segment][self::SESSION_INDEX][$name] = $value;
         $this->changed = true;
 
         return $this;
@@ -124,11 +126,11 @@ class Session
      */
     public function get(string $name)
     {
-        if ( ! isset($this->data[$this->segment][0][$name])) {
+        if (! isset($this->data[$this->segment][self::SESSION_INDEX]) || ! array_key_exists($name, $this->data[$this->segment][self::SESSION_INDEX])) {
             throw new RuntimeException("\"{$name}\" does not exist in current session segment.");
         }
 
-        return $this->data[$this->segment][0][$name];
+        return $this->data[$this->segment][self::SESSION_INDEX][$name];
     }
 
     /**
@@ -140,7 +142,7 @@ class Session
      */
     public function del(string $name): Session
     {
-        unset($this->data[$this->segment][0][$name]);
+        unset($this->data[$this->segment][self::SESSION_INDEX][$name]);
         $this->changed = true;
 
         return $this;
@@ -155,17 +157,19 @@ class Session
      */
     public function delFlash(string $name): Session
     {
-        unset($this->data[$this->segment][1][$name]);
+        unset($this->data[$this->segment][self::FLASH_INDEX][$name]);
         $this->changed = true;
 
         return $this;
     }
 
-    public function pop(string $name)
+    public function pop(string $name, bool $back = false)
     {
         $this->changed = true;
 
-        return array_pop($this->data[$this->segment][0][$name]);
+        return $back
+            ? array_shift($this->data[$this->segment][self::SESSION_INDEX][$name])
+            : array_pop($this->data[$this->segment][self::SESSION_INDEX][$name]);
     }
 
     /**
@@ -179,7 +183,7 @@ class Session
      */
     public function getOrDefault(string $name, $default = null)
     {
-        return $this->data[$this->segment][0][$name] ?? $default;
+        return $this->data[$this->segment][self::SESSION_INDEX][$name] ?? $default;
     }
 
     /**
@@ -193,7 +197,7 @@ class Session
      */
     public function setFlash(string $name, $value): Session
     {
-        $this->data[$this->segment][1][$name] = $value;
+        $this->data[$this->segment][self::FLASH_INDEX][$name] = $value;
         $this->changed = true;
 
         return $this;
@@ -208,12 +212,12 @@ class Session
      */
     public function getFlash(string $name)
     {
-        if ( ! isset($this->data[$this->segment][1][$name])) {
+        if (! isset($this->data[$this->segment][self::FLASH_INDEX]) || ! array_key_exists($name, $this->data[$this->segment][self::FLASH_INDEX])) {
             throw new RuntimeException("flash(\"{$name}\") does not exist in current session segment.");
         }
 
-        $value =  $this->data[$this->segment][1][$name];
-        unset($this->data[$this->segment][1][$name]);
+        $value =  $this->data[$this->segment][self::FLASH_INDEX][$name];
+        unset($this->data[$this->segment][self::FLASH_INDEX][$name]);
         $this->changed = true;
 
         return $value;
@@ -230,8 +234,8 @@ class Session
      */
     public function getFlashOrDefault(string $name, $default = null)
     {
-        $value =  $this->data[$this->segment][1][$name] ?? $default;
-        unset($this->data[$this->segment][1][$name]);
+        $value =  $this->data[$this->segment][self::FLASH_INDEX][$name] ?? $default;
+        unset($this->data[$this->segment][self::FLASH_INDEX][$name]);
         $this->changed = true;
 
         return $value;
@@ -263,11 +267,14 @@ class Session
      */
     public function exist(string $name, bool $in_flash = false): bool
     {
-        return isset($this->data[$this->segment][$in_flash ? 0 : 1][$name]);
+        $type = $in_flash ? self::FLASH_INDEX : self::SESSION_INDEX;
+
+        return isset($this->data[$this->segment][$type]) && array_key_exists($name, $this->data[$this->segment][$type]);
     }
 
     /**
-     * Generate a new session identifier
+     * Generate a new session identifier.
+     * https://www.php.net/manual/en/function.session-regenerate-id.php
      *
      * @param bool $delete_old
      *
@@ -301,7 +308,7 @@ class Session
         return $this;
     }
 
-    public function commit()
+    public function commit(): void
     {
         if ($this->changed) {
             $this->changed = false;
@@ -314,7 +321,7 @@ class Session
     /**
      * Destroy the session data including namespace and segments
      */
-    public function destroy()
+    public function destroy(): void
     {
         session_start();
         $_SESSION = [];

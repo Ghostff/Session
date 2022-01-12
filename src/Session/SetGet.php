@@ -7,10 +7,8 @@ use RuntimeException;
 
 class SetGet
 {
-    /** @var bool  */
-    private $encrypt;
-    /** @var string  */
-    private $key;
+    private bool $encrypt;
+    private string $key;
 
     /**
      * SetGet constructor.
