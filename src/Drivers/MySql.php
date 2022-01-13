@@ -1,37 +1,36 @@
-<?php
+<?php declare(strict_types=1);
 
-declare(strict_types=1);
+namespace Ghostff\Session\Drivers;
 
-namespace Session\MySql;
+use Ghostff\Session\Session;
+use PDO;
+use PDOException;
+use RuntimeException;
+use SessionHandlerInterface;
 
-use PDO, PDOException, Session, SessionHandlerInterface;
-
-class Handler extends Session\SetGet implements SessionHandlerInterface
+class MySql extends SetGet implements SessionHandlerInterface
 {
-    private $conn;
-    private $table;
-    private $persistent;
+    private PDO    $conn;
+    private string $table;
 
     public function __construct(array $config)
     {
-        parent::__construct($config['encrypt_data'], $config['salt_key']);
+        if (! extension_loaded('pdo')) {
+            throw new RuntimeException('\'Pdo\' extension is needed to use this driver.');
+        }
 
-        $config             = $config['mysql'];
-        $table              = $config['table'] ?? 'session';
-        $this->table        = $table;
-        $this->persistent   = $config['persistent_conn'];
-        $dsn                = "{$config['driver']}:host={$config['host']};dbname={$config['db_name']}";
-        $this->conn         = new PDO($dsn,  $config['db_user'], $config['db_pass'], [
-            PDO::ATTR_PERSISTENT => $this->persistent,
-            PDO::ATTR_ERRMODE    => PDO::ERRMODE_EXCEPTION
+        parent::__construct($config);
+        $config      = $config[Session::CONFIG_MYSQL_DS];
+        $dsn         = "{$config['driver']}:host={$config['host']};dbname={$config['db_name']}";
+        $this->table = $table = $config['db_table'];
+        $this->conn  = new PDO($dsn, $config['db_user'], $config['db_pass'], [
+            PDO::ATTR_PERSISTENT => $config['persistent_conn'],
+            PDO::ATTR_ERRMODE    => PDO::ERRMODE_EXCEPTION,
         ]);
 
-        try
-        {
+        try {
             $this->conn->query("SELECT 1 FROM `{$table}` LIMIT 1");
-        }
-        catch (PDOException $e)
-        {
+        } catch (PDOException $e) {
             $this->conn->query('CREATE TABLE `' . $table . '` (
               `id` varchar(250) NOT NULL,
               `data` text NOT NULL,
@@ -41,7 +40,7 @@ class Handler extends Session\SetGet implements SessionHandlerInterface
         }
     }
 
-    public function open($savePath, $sessionName): bool
+    public function open($path, $name): bool
     {
         return true;
     }
@@ -53,17 +52,16 @@ class Handler extends Session\SetGet implements SessionHandlerInterface
 
     public function read($id): string
     {
-        $data = '';
+        $data      = '';
         $statement = $this->conn->prepare("SELECT `data` FROM `{$this->table}` WHERE `id` = :id");
         $statement->bindParam(':id', $id, PDO::PARAM_STR);
-        if ($statement->execute())
-        {
+        if ($statement->execute()) {
             $result = $statement->fetch();
-            $data = $result['data'] ?? '';
+            $data   = $result['data'] ?? '';
         }
-        #close
-        $statement = null;
-        return ($data == '') ? '' : $this->get($data);
+        $statement = null; // close
+
+        return $this->get($data);
     }
 
     public function write($id, $data): bool
@@ -73,8 +71,8 @@ class Handler extends Session\SetGet implements SessionHandlerInterface
         $statement->bindValue(':data', $this->set($data), PDO::PARAM_STR);
         $statement->bindValue(':time', time(), PDO::PARAM_INT);
         $completed = $statement->execute();
-        #close
-        $statement = null;
+        $statement = null; // close
+
         return $completed;
     }
 
@@ -83,19 +81,19 @@ class Handler extends Session\SetGet implements SessionHandlerInterface
         $statement = $this->conn->prepare("DELETE FROM `{$this->table}` WHERE `id` = :id");
         $statement->bindParam(':id', $id, PDO::PARAM_STR);
         $completed = $statement->execute();
-        #close
-        $statement = null;
+        $statement = null; // close
+
         return $completed;
     }
 
-    public function gc($max_life_time): bool
+    public function gc($max_lifetime): bool
     {
-        $max_life_time = time() - $max_life_time;
-        $statement = $this->conn->prepare("DELETE FROM `{$this->table}` WHERE `time` < :time");
-        $statement->bindParam(':time', $max_life_time, PDO::PARAM_INT);
+        $max_lifetime = time() - $max_lifetime;
+        $statement    = $this->conn->prepare("DELETE FROM `{$this->table}` WHERE `time` < :time");
+        $statement->bindParam(':time', $max_lifetime, PDO::PARAM_INT);
         $completed = $statement->execute();
-        #close
-        $statement = null;
+        $statement = null; // close
+
         return $completed;
     }
 }

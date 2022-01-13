@@ -11,7 +11,7 @@ $ composer require ghostff/session
 ```
 ```json
 "require": {
-    "ghostff/session": "^1.0"
+    "ghostff/session": "^2.0"
 }
 ```    
 
@@ -25,24 +25,27 @@ $session->set('email', 'foo@bar.com');
 echo $session->get('email');
 ```
 
-## Configuration (optional)
+## Configuration Options
 ```php
-# loads the default configuration "src/Session/default_config.php"
-Configuration::loadDefaultConfiguration();
- 
 # use custom configuration file.
-Configuration::loadDefaultConfiguration('path/to/my/config.php');
+Session::setConfigurationFile('path/to/my/config.php');
  
 # overriding specific configuration settings
-Configuration::set(['encrypt_data' => true]);
+Session::updateConfiguration([
+    Session::CONFIG_DRIVER        => Redis::class,
+    Session::CONFIG_START_OPTIONS => [
+        Session::CONFIG_START_OPTIONS_SAVE_PATH => __DIR__ . '/tmp'
+    ]
+]);
+
+# override a configuration for current session instance
+$session = new Session([Session::CONFIG_ENCRYPT_DATA => true]);
 ```
 
 ## Initializing Session
 ```php
-# Start session with default default or specified configurations.
+# Start session with an auto generated id.
 $session = new Session(); 
-
-$session = new Session(Configuration::set(['encrypt_data' => true]));
 
 # Start session with custom ID
 $session = new Session(null, bin2hex(random_bytes(32)));
@@ -145,12 +148,12 @@ $session->push('age', 10)
         ->push('age', 40);
 ```
 
-## Retrieving Queued Session Data *:mixed*
+## Retrieving (pop/shift) Queued Session Data *:mixed*
 ```php
-echo $session->pop('age');  # outputs 10
-echo $session->pop('age');  # outputs 20
-echo $session->pop('age');  # outputs 30
-echo $session->pop('age');  # outputs 40
+echo $session->pop('age', true);  # outputs 10
+echo $session->pop('age', true);  # outputs 20
+echo $session->pop('age');        # outputs 40
+echo $session->pop('age');        # outputs 30
 ```
 
 

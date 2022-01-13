@@ -1,10 +1,11 @@
 <?php declare(strict_types=1);
 
+use Ghostff\Session\Drivers\File;
 use Ghostff\Session\Drivers\SetGet;
 use Ghostff\Session\Session;
 use PHPUnit\Framework\TestCase;
 
-class FileSessionTest extends TestCase
+class CookieSessionTest extends TestCase
 {
     private string $session_path = __DIR__ . DIRECTORY_SEPARATOR . 'seasons' . DIRECTORY_SEPARATOR;
 
@@ -12,7 +13,10 @@ class FileSessionTest extends TestCase
     {
         parent::setUp();
         @mkdir($this->session_path);
-        Session::updateConfiguration([Session::CONFIG_START_OPTIONS => [Session::CONFIG_START_OPTIONS_SAVE_PATH => $this->session_path]]);
+        Session::updateConfiguration([
+            Session::CONFIG_DRIVER => File::class,
+            Session::CONFIG_START_OPTIONS => [Session::CONFIG_START_OPTIONS_SAVE_PATH => $this->session_path]
+        ]);
 
         $session  = new ReflectionClass(Session::class);
         define('DEFAULT_SEGMENT', $session->getConstant('DEFAULT_SEGMENT'));
@@ -57,7 +61,7 @@ class FileSessionTest extends TestCase
         $session->set('bool', true);
         $session->set('array', ['one', 2, 3.0, false]);
         $session->set('null', null);
-        $session->set('object', $stdcls = new \StdClass());
+        $session->set('object', $stdcls = new StdClass());
 
         $this->assertSame([
             $session->get('string'),
@@ -135,7 +139,7 @@ class FileSessionTest extends TestCase
 
     public function test_that_trying_to_get_a_value_of_non_existing_key_throws_an_exception()
     {
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(RuntimeException::class);
 
         $session = new Session();
         $session->get('non-existing-key');
@@ -159,7 +163,7 @@ class FileSessionTest extends TestCase
 
     public function test_that_del_can_remove_set_data_from_session()
     {
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(RuntimeException::class);
         $session = new Session();
         $session->set('foo', 'Bar');
         $session->del('foo');
@@ -169,7 +173,7 @@ class FileSessionTest extends TestCase
 
     public function test_that_push_can_remove_set_data_from_session()
     {
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(RuntimeException::class);
         $session = new Session();
         $session->push('name', '124');
         $session->del('name');
@@ -196,7 +200,7 @@ class FileSessionTest extends TestCase
         $session->setFlash('bool', true);
         $session->setFlash('array', ['one', 2, 3.0, false]);
         $session->setFlash('null', null);
-        $session->setFlash('object', $stdcls = new \StdClass());
+        $session->setFlash('object', $stdcls = new StdClass());
 
         $this->assertSame([
             $session->getFlash('string'),
@@ -211,7 +215,7 @@ class FileSessionTest extends TestCase
 
     public function test_that_trying_to_get_a_none_existing_flash_value_throws_a_RuntimeException()
     {
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(RuntimeException::class);
 
         $session = new Session();
         $session->getFlash('non-existing-key');
@@ -229,7 +233,7 @@ class FileSessionTest extends TestCase
 
     public function test_that_data_store_as_flash_are_removed_after_it_has_been_read()
     {
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(RuntimeException::class);
         $session = new Session();
         $session->setFlash('foo', 3434);
         $session->getFlash('foo');
