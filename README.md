@@ -6,7 +6,7 @@ PHP Session Manager (non-blocking, flash, segment, session encryption). Uses PHP
 ![cookie](https://img.shields.io/badge/COOKIE-completed-brightgreen.svg?style=flat-square)&nbsp;&nbsp;&nbsp;
 ![pdo](https://img.shields.io/badge/PDO-completed-brightgreen.svg?style=flat-square)&nbsp;&nbsp;&nbsp;
 ![memcached](https://img.shields.io/badge/MEMCACHED-completed-brightgreen.svg?style=flat-square)&nbsp;&nbsp;&nbsp;
-![redis](https://img.shields.io/badge/REDIS-active-brightgreen.svg?style=flat-square)&nbsp;&nbsp;&nbsp;
+![redis](https://img.shields.io/badge/REDIS-completed-brightgreen.svg?style=flat-square)&nbsp;&nbsp;&nbsp;
 [![license](https://img.shields.io/pypi/l/Django.svg?style=flat-square)]()&nbsp;&nbsp;&nbsp;
 [![Minimum PHP Version](https://img.shields.io/badge/php-%3E%3D%207.4-8892BF.svg?style=flat-square)](http://php.net/releases/7_4_0.php)
 
