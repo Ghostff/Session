@@ -12,14 +12,9 @@ PHP Session Manager (non-blocking, flash, segment, session encryption). Uses PHP
 
 # Installation   
 You can download the Latest [release version ](https://github.com/Ghostff/Session/releases/) as a standalone, alternatively you can use [Composer](https://getcomposer.org/) 
-```json
-$ composer require ghostff/session
+```bash
+composer require ghostff/session
 ```
-```json
-"require": {
-    "ghostff/session": "^2.0"
-}
-```    
 
 ## Basic usage
 ```php
