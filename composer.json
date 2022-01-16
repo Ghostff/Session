@@ -3,7 +3,7 @@
     "description": "PHP Session Manager (non-blocking, flash, segment, session encryption).",
     "keywords" : ["session", "segment", "secured-session", "session-manger", "non-blocking", "memcached", "redis", "sql"],
     "type": "library",
-    "license": "BSD",
+    "license": "0BSD",
     "authors": [
         {
             "name": "ghostff",
