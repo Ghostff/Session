@@ -11,6 +11,7 @@ class BaseTestCase extends TestCase
     public function setUp(): void
     {
         parent::setUp();
+        @mkdir($this->session_path);
         $session  = new ReflectionClass(Session::class);
         define('DEFAULT_SEGMENT', $session->getConstant('DEFAULT_SEGMENT'));
         define('SESSION_INDEX', $session->getConstant('SESSION_INDEX'));
