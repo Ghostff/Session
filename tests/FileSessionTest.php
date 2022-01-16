@@ -7,7 +7,6 @@ class FileSessionTest extends BaseTestCase
     public function setUp(): void
     {
         parent::setUp();
-        @mkdir($this->session_path);
         Session::updateConfiguration([Session::CONFIG_START_OPTIONS => [Session::CONFIG_START_OPTIONS_SAVE_PATH => $this->session_path]]);
     }
 
