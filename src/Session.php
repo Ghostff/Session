@@ -10,13 +10,13 @@ class Session
     public const CONFIG_DRIVER                  = 'driver';
     public const CONFIG_ENCRYPT_DATA            = 'encrypt_data';
     public const CONFIG_SALT_KEY                = 'salt_key';
+    public const CONFIG_AUTO_COMMIT             = 'auto_commit';
     public const CONFIG_START_OPTIONS           = 'start_options';
     public const CONFIG_START_OPTIONS_NAME      = 'name';
     public const CONFIG_START_OPTIONS_SAVE_PATH = 'save_path';
     public const CONFIG_MYSQL_DS                = 'mysql';
     public const CONFIG_MEMCACHED_DS            = 'memcached';
     public const CONFIG_REDIS_DS                = 'redis';
-
 
     protected const DEFAULT_SEGMENT  = ':';
     protected const SESSION_INDEX    = 0;
@@ -26,6 +26,7 @@ class Session
     protected array         $data          = [];
     protected string        $segment       = self::DEFAULT_SEGMENT;
     protected bool          $changed       = false;
+    protected bool          $auto_commit   = false;
     protected string        $id            = '';
     protected string        $name          = '';
     protected array         $cookie_params = [];
@@ -69,11 +70,9 @@ class Session
         return $merged;
     }
 
-
     public function __construct(array $config_override = null, string $id = null)
     {
-        if ($id != null)
-        {
+        if ($id != null) {
             if (headers_sent($filename, $line_num)) {
                 throw new RuntimeException(sprintf('ID must be set before any output is sent to the browser (file: %s, line: %s)', $filename, $line_num));
             } elseif (preg_match('/^[-,a-zA-Z0-9]{1,128}$/', $id) < 1) {
@@ -88,11 +87,12 @@ class Session
         session_set_save_handler(new $driver($config), false);
         session_start($config[self::CONFIG_START_OPTIONS] + ['read_and_close' => true]);
 
-        $this->id                         = session_id();
-        $this->data                       = $_SESSION;
-        $this->cookie_params              = session_get_cookie_params();
-        $this->name                       = $config[self::CONFIG_START_OPTIONS][self::CONFIG_START_OPTIONS_NAME];
-        $this->cookie_params['expires']   = $this->cookie_params['lifetime'];
+        $this->id                       = session_id();
+        $this->data                     = $_SESSION;
+        $this->cookie_params            = session_get_cookie_params();
+        $this->auto_commit              = $config[self::CONFIG_AUTO_COMMIT];
+        $this->name                     = $config[self::CONFIG_START_OPTIONS][self::CONFIG_START_OPTIONS_NAME];
+        $this->cookie_params['expires'] = $this->cookie_params['lifetime'];
 
         unset($this->cookie_params['lifetime']);
         setcookie($this->name, $this->id, $this->cookie_params);
@@ -385,6 +385,8 @@ class Session
 
     public function __destruct()
     {
-        $this->commit();
+        if ($this->auto_commit) {
+            $this->commit();
+        }
     }
 }
