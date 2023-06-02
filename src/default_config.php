@@ -19,7 +19,8 @@ return [
         'cookie_lifetime'   => '0',                 # Specifies the lifetime of the cookie in seconds which is sent to the browser. The value 0 means "until the browser is closed."
         'gc_maxlifetime'    => '1440',              # Specifies the number of seconds after which data will be seen as 'garbage' and potentially cleaned up.
         'use_strict_mode'   => '1',                 # Specifies whether the module will use strict session id mode.
-        'gc_probability'    => '1',                 #
+        'gc_probability'    => '1',                 # https://www.php.net/manual/en/session.configuration.php#ini.session.gc-probability
+        'gc_divisor'        => '100',               # https://www.php.net/manual/en/session.configuration.php#ini.session.gc-divisor
     ],
 
     Session::CONFIG_MYSQL_DS         => [

@@ -86,14 +86,16 @@ class MySql extends SetGet implements SessionHandlerInterface
         return $completed;
     }
 
-    public function gc($max_lifetime): bool
+    #[\ReturnTypeWillChange]
+    public function gc($max_lifetime)
     {
         $max_lifetime = time() - $max_lifetime;
         $statement    = $this->conn->prepare("DELETE FROM `{$this->table}` WHERE `time` < :time");
         $statement->bindParam(':time', $max_lifetime, PDO::PARAM_INT);
-        $completed = $statement->execute();
+        $statement->execute();
+        $count = $statement->rowCount();
         $statement = null; // close
 
-        return $completed;
+        return $count;
     }
 }

@@ -16,6 +16,7 @@ class Cookie extends SetGet implements SessionHandlerInterface
         return true;
     }
 
+    #[\ReturnTypeWillChange]
     public function read($id): string
     {
         return $this->get($_COOKIE[$id] ?? '');
@@ -36,8 +37,9 @@ class Cookie extends SetGet implements SessionHandlerInterface
         return true;
     }
 
-    public function gc($max_lifetime): bool
+    #[\ReturnTypeWillChange]
+    public function gc($max_lifetime)
     {
-        return true;
+        return 0;
     }
 }

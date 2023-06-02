@@ -20,6 +20,7 @@ class File extends SetGet implements SessionHandlerInterface
         return true;
     }
 
+    #[\ReturnTypeWillChange]
     public function read($id): string
     {
         return $this->get((string) @file_get_contents("{$this->save_path}/sess_{$id}"));
@@ -39,15 +40,19 @@ class File extends SetGet implements SessionHandlerInterface
         return true;
     }
 
-    public function gc($max_lifetime): bool
+    #[\ReturnTypeWillChange]
+    public function gc($max_lifetime)
     {
         $time = time();
+        $count = 0;
+
         foreach (glob("{$this->save_path}sess_*") as $file) {
             if (filemtime($file) + $max_lifetime < $time && file_exists($file)) {
                 unlink($file);
+                $count++;
             }
         }
 
-        return true;
+        return $count;
     }
 }
