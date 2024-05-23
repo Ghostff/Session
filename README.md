@@ -18,7 +18,7 @@ composer require ghostff/session
 
 ## Basic usage
 ```php
-# Start session with default default or specified configurations.
+# Start session with default configurations.
 $session = new Session(); 
 
 $session->set('email', 'foo@bar.com');
