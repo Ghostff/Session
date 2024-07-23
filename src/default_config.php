@@ -49,7 +49,7 @@ return [
         'timeout'       => 2.5
     ],
     Session::CONFIG_SQLITE_DS         => [
-        'driver' => 'sqlite',
+        'driver' => 'SQLite',
         'db_path' => 'sessions.db',
         'db_table' => 'sessions',
     ]

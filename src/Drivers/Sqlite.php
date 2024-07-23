@@ -10,6 +10,7 @@ use PDOException;
 use RuntimeException;
 use SessionHandlerInterface;
 
+
 class SQLite extends SetGet implements SessionHandlerInterface
 {
     private PDO $conn;
@@ -37,7 +38,7 @@ class SQLite extends SetGet implements SessionHandlerInterface
             $this->conn->query("SELECT 1 FROM `{$table}` LIMIT 1");
         } catch (PDOException $e) {
             // Debug information
-            error_log("Error connecting to SQLite database or checking table: " . $e->getMessage());
+            throw new RuntimeException("Error connecting to SQLite database or checking table: " . $e->getMessage());
 
             $this->conn->query('CREATE TABLE `' . $table . '` (
                 `id` TEXT PRIMARY KEY,
@@ -68,7 +69,7 @@ class SQLite extends SetGet implements SessionHandlerInterface
             $data = $result['data'] ?? '';
         } else {
             // Debug information
-            error_log("Failed to execute read statement for ID: {$id}");
+            throw new RuntimeException("Failed to execute read statement for ID: {$id}");
         }
 
         $statement = null; // close
@@ -85,7 +86,7 @@ class SQLite extends SetGet implements SessionHandlerInterface
         $completed = $statement->execute();
         if (!$completed) {
             // Debug information
-            error_log("Failed to execute write statement for ID: {$id}");
+            throw new RuntimeException("Failed to execute write statement for ID: {$id}");
         }
 
         $statement = null; // close
@@ -100,7 +101,7 @@ class SQLite extends SetGet implements SessionHandlerInterface
         $completed = $statement->execute();
         if (!$completed) {
             // Debug information
-            error_log("Failed to execute destroy statement for ID: {$id}");
+            throw new RuntimeException("Failed to execute destroy statement for ID: {$id}");
         }
 
         $statement = null; // close
@@ -108,7 +109,7 @@ class SQLite extends SetGet implements SessionHandlerInterface
     }
 
     #[\ReturnTypeWillChange]
-    public function gc($max_lifetime)
+    public function gc(int $max_lifetime): int|false
     {
         $max_lifetime = time() - $max_lifetime;
         $statement = $this->conn->prepare("DELETE FROM `{$this->table}` WHERE `time` < :time");
