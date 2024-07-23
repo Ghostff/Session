@@ -6,7 +6,7 @@ use SessionHandlerInterface;
 
 class Cookie extends SetGet implements SessionHandlerInterface
 {
-    public function open($path, $name)
+    public function open($path, $name): bool
     {
         return true;
     }
