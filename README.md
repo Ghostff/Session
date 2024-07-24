@@ -1,10 +1,11 @@
 # Session PHP(7.4+)
 PHP Session Manager (non-blocking, flash, segment, session encryption). Uses PHP [open_ssl](http://php.net/manual/en/book.openssl.php) for **optional** encrypt/decryption of session data.
 
-### Driver support  Scope
+### Driver Support Scope
 ![file](https://img.shields.io/badge/FILE-completed-brightgreen.svg?style=flat-square)&nbsp;&nbsp;&nbsp;
 ![cookie](https://img.shields.io/badge/COOKIE-completed-brightgreen.svg?style=flat-square)&nbsp;&nbsp;&nbsp;
-![pdo](https://img.shields.io/badge/PDO-completed-brightgreen.svg?style=flat-square)&nbsp;&nbsp;&nbsp;
+![mysql](https://img.shields.io/badge/MYSQL-completed-brightgreen.svg?style=flat-square)&nbsp;&nbsp;&nbsp;
+![sqlite](https://img.shields.io/badge/SQLITE-completed-brightgreen.svg?style=flat-square)&nbsp;&nbsp;&nbsp;
 ![memcached](https://img.shields.io/badge/MEMCACHED-completed-brightgreen.svg?style=flat-square)&nbsp;&nbsp;&nbsp;
 ![redis](https://img.shields.io/badge/REDIS-completed-brightgreen.svg?style=flat-square)&nbsp;&nbsp;&nbsp;
 [![license](https://img.shields.io/pypi/l/Django.svg?style=flat-square)]()&nbsp;&nbsp;&nbsp;
