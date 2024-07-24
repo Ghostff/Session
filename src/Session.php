@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Ghostff\Session;
 
@@ -17,6 +19,7 @@ class Session
     public const CONFIG_MYSQL_DS                = 'mysql';
     public const CONFIG_MEMCACHED_DS            = 'memcached';
     public const CONFIG_REDIS_DS                = 'redis';
+    public const CONFIG_SQLITE_DS               = 'sqlite';
 
     protected const DEFAULT_SEGMENT  = ':';
     protected const SESSION_INDEX    = 0;
@@ -38,7 +41,8 @@ class Session
 
     public static function updateConfiguration(array $config_override): array
     {
-        return self::$config = self::arrayMergeRecursiveDistinct(self::$config ?: self::setConfigurationFile(), $config_override);
+        self::$config = self::arrayMergeRecursiveDistinct(self::$config ?: self::setConfigurationFile(), $config_override);
+        return self::$config;
     }
 
     /**
@@ -52,13 +56,12 @@ class Session
     protected static function arrayMergeRecursiveDistinct(array $array1, array &$array2): array
     {
         $merged = $array1;
-        foreach ($array2 as $key => &$value)
-        {
+        foreach ($array2 as $key => &$value) {
             if (\is_array($value) && isset($merged[$key]) && \is_array($merged[$key])) {
                 $merged[$key] = self::arrayMergeRecursiveDistinct($merged[$key], $value);
             } else {
                 if (\is_numeric($key)) {
-                    if (! \in_array($value, $merged)) {
+                    if (!\in_array($value, $merged)) {
                         $merged[] = $value;
                     }
                 } else {
@@ -118,8 +121,8 @@ class Session
     public function segment(string $name): self
     {
         $session          = new self();
-        $session->data    =& $this->data;
-        $session->changed =& $this->changed;
+        $session->data    = &$this->data;
+        $session->changed = &$this->changed;
         $session->segment = $name;
 
         return $session;
@@ -150,8 +153,7 @@ class Session
     public function push(string $name, $value): self
     {
         $values = $this->getOrDefault($name, []);
-        if ( ! is_array($values))
-        {
+        if (!is_array($values)) {
             $values = [$values];
         }
 
@@ -169,7 +171,7 @@ class Session
      */
     public function get(string $name)
     {
-        if (! isset($this->data[$this->segment][self::SESSION_INDEX]) || ! array_key_exists($name, $this->data[$this->segment][self::SESSION_INDEX])) {
+        if (!isset($this->data[$this->segment][self::SESSION_INDEX]) || !array_key_exists($name, $this->data[$this->segment][self::SESSION_INDEX])) {
             throw new RuntimeException("\"{$name}\" does not exist in current session segment.");
         }
 
@@ -263,7 +265,7 @@ class Session
      */
     public function getFlash(string $name)
     {
-        if (! isset($this->data[$this->segment][self::FLASH_INDEX]) || ! array_key_exists($name, $this->data[$this->segment][self::FLASH_INDEX])) {
+        if (!isset($this->data[$this->segment][self::FLASH_INDEX]) || !array_key_exists($name, $this->data[$this->segment][self::FLASH_INDEX])) {
             throw new RuntimeException("flash(\"{$name}\") does not exist in current session segment.");
         }
 
@@ -333,8 +335,7 @@ class Session
      */
     public function rotate(bool $delete_old = false): self
     {
-        if (headers_sent($filename, $line_num))
-        {
+        if (headers_sent($filename, $line_num)) {
             throw new RuntimeException(sprintf('ID must be regenerated before any output is sent to the browser. (file: %s, line: %s)', $filename, $line_num));
         }
 

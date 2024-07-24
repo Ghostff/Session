@@ -1,4 +1,5 @@
 <?php
+
 use Ghostff\Session\Drivers\File;
 use Ghostff\Session\Session;
 
@@ -30,7 +31,7 @@ return [
         'db_table'  => 'session',           # Database table
         'db_user'   => 'root',              # Database username
         'db_pass'   => '',                  # Database password
-        'persistent_conn'=> false,          # Avoid the overhead of establishing a new connection every time a script needs to talk to a database, resulting in a faster web application. FIND THE BACKSIDE YOURSELF
+        'persistent_conn' => false,          # Avoid the overhead of establishing a new connection every time a script needs to talk to a database, resulting in a faster web application. FIND THE BACKSIDE YOURSELF
     ],
     Session::CONFIG_MEMCACHED_DS     => [
         'servers'       => [
@@ -46,5 +47,11 @@ return [
         'save_path'     => 'tcp://127.0.0.1:6379', #comma separated of hostname:port entries to use for session server pool.
         'persistent_id' => 'sess_pool',
         'timeout'       => 2.5
+    ],
+    Session::CONFIG_SQLITE_DS         => [
+        'driver' => 'SQLite',
+        'db_path' => 'sessions.db',
+        'db_table' => 'sessions',
     ]
+
 ];
