@@ -158,4 +158,24 @@ echo $session->pop('age');        # outputs 40
 echo $session->pop('age');        # outputs 30
 ```
 
+## Driver configuration
+
+You can provide your own database connection (PDO, Memcached, Redis, etc). Provide the connection before constructing the session:
+```php
+// Example: supplying a PDO connection
+$pdo = new PDO('mysql:host=127.0.0.1;dbname=sessions', 'user', 'pass', [
+    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+]);
+
+Session::setConnection(Session::CONFIG_MYSQL_DS, $pdo);
+
+// Then construct your session (the configured driver will use this connection)
+$session = new Session();
+```
+
+Similarly, you can set connections for:
+- `Session::CONFIG_SQLITE_DS` with a PDO SQLite connection
+- `Session::CONFIG_MEMCACHED_DS` with a Memcached instance
+- `Session::CONFIG_REDIS_DS` with a Redis instance
+
 

@@ -20,13 +20,10 @@ class MySql extends SetGet implements SessionHandlerInterface
         }
 
         parent::__construct($config);
+        $connections = $config[Session::CONFIG_USER_CONNECTION];
         $config      = $config[Session::CONFIG_MYSQL_DS];
-        $dsn         = "{$config['driver']}:host={$config['host']};dbname={$config['db_name']}";
         $this->table = $table = $config['db_table'];
-        $this->conn  = new PDO($dsn, $config['db_user'], $config['db_pass'], [
-            PDO::ATTR_PERSISTENT => $config['persistent_conn'],
-            PDO::ATTR_ERRMODE    => PDO::ERRMODE_EXCEPTION,
-        ]);
+        $this->conn  = $connections[Session::CONFIG_MYSQL_DS] ?? $this->getConnection($config);
 
         try {
             $this->conn->query("SELECT 1 FROM `{$table}` LIMIT 1");
@@ -38,6 +35,16 @@ class MySql extends SetGet implements SessionHandlerInterface
               PRIMARY KEY (`id`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;');
         }
+    }
+
+    protected function getConnection(array $config): PDO
+    {
+        $dsn = "{$config['driver']}:host={$config['host']};dbname={$config['db_name']}";
+
+        return new PDO($dsn, $config['db_user'], $config['db_pass'], [
+            PDO::ATTR_PERSISTENT => $config['persistent_conn'],
+            PDO::ATTR_ERRMODE    => PDO::ERRMODE_EXCEPTION,
+        ]);
     }
 
     public function open($path, $name): bool

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Ghostff\Session;
 
 use InvalidArgumentException;
+use PDO;
 use RuntimeException;
 
 class Session
@@ -20,12 +21,14 @@ class Session
     public const CONFIG_MEMCACHED_DS            = 'memcached';
     public const CONFIG_REDIS_DS                = 'redis';
     public const CONFIG_SQLITE_DS               = 'sqlite';
+    public const CONFIG_USER_CONNECTION         = 'user_connections';
 
     protected const DEFAULT_SEGMENT  = ':';
     protected const SESSION_INDEX    = 0;
     protected const FLASH_INDEX      = 1;
 
     protected static ?array $config        = null;
+    protected static array  $connections   = [];
     protected array         $data          = [];
     protected string        $segment       = self::DEFAULT_SEGMENT;
     protected bool          $changed       = false;
@@ -37,6 +40,19 @@ class Session
     public static function setConfigurationFile(string $file_name = __DIR__ . '/default_config.php'): array
     {
         return self::$config ?: (self::$config = include($file_name));
+    }
+
+    public static function setConnection(string $driver, $connection): void
+    {
+        if (in_array($driver, [static::CONFIG_MYSQL_DS, static::CONFIG_SQLITE_DS]) && !($connection instanceof PDO)) {
+            throw new InvalidArgumentException("Driver \"{$driver}\" requires PDO connection.");
+        } elseif ($driver == static::CONFIG_MEMCACHED_DS && !($connection instanceof \Memcached)) {
+            throw new InvalidArgumentException("Driver \"{$driver}\" requires Memcached connection.");
+        } elseif ($driver == static::CONFIG_REDIS_DS && !($connection instanceof \Redis)) {
+            throw new InvalidArgumentException("Driver \"{$driver}\" requires Redis connection.");
+        }
+
+        self::$connections[$driver] = $connection;
     }
 
     public static function updateConfiguration(array $config_override): array
@@ -73,7 +89,7 @@ class Session
         return $merged;
     }
 
-    public function __construct(array $config_override = null, string $id = null)
+    public function __construct(?array $config_override = null, ?string $id = null)
     {
         if ($id != null) {
             if (headers_sent($filename, $line_num)) {
@@ -87,7 +103,7 @@ class Session
 
         $config = $config_override ? self::updateConfiguration($config_override) : self::setConfigurationFile();
         $driver = $config[self::CONFIG_DRIVER];
-        session_set_save_handler(new $driver($config), false);
+        session_set_save_handler(new $driver($config + [self::CONFIG_USER_CONNECTION => self::$connections]), false);
         session_start($config[self::CONFIG_START_OPTIONS] + ['read_and_close' => true]);
 
         $this->id                       = session_id();
@@ -97,6 +113,7 @@ class Session
         $this->name                     = $config[self::CONFIG_START_OPTIONS][self::CONFIG_START_OPTIONS_NAME];
         $this->cookie_params['expires'] = $this->cookie_params['lifetime'];
 
+        self::$connections = [];
         unset($this->cookie_params['lifetime']);
         setcookie($this->name, $this->id, $this->cookie_params);
     }
@@ -301,7 +318,7 @@ class Session
      *
      * @return array
      */
-    public function getAll(string $segment = null): array
+    public function getAll(?string $segment = null): array
     {
         if ($segment == null) {
             return $this->data;

@@ -14,21 +14,29 @@ class Memcached extends SetGet implements SessionHandlerInterface
     {
         parent::__construct($config);
 
-        $this->name = $config[Session::CONFIG_START_OPTIONS][Session::CONFIG_START_OPTIONS_NAME];
-        $config     = $config[Session::CONFIG_MEMCACHED_DS];
+        $this->name  = $config[Session::CONFIG_START_OPTIONS][Session::CONFIG_START_OPTIONS_NAME];
+        $connections = $config[Session::CONFIG_USER_CONNECTION];
+        $config      = $config[Session::CONFIG_MEMCACHED_DS];
 
         ini_set('session.save_handler', 'memcached');
         ini_set('session.save_path', $config['save_path']);
 
-        $this->conn = new \Memcached($config['persistent_id']);
-        $this->conn->setOptions([
-            \Memcached::OPT_LIBKETAMA_COMPATIBLE => true,
-            \Memcached::OPT_COMPRESSION          => $config['compress'],
-        ]);
+        $this->conn = $connections[Session::CONFIG_MEMCACHED_DS] ?? $this->getConnection($config);
 
         if (! count($this->conn->getServerList())) {
             $this->conn->addServers($config['servers']);
         }
+    }
+
+    protected function getConnection(array $config): \Memcached
+    {
+        $conn = new \Memcached($config['persistent_id']);
+        $conn->setOptions([
+            \Memcached::OPT_LIBKETAMA_COMPATIBLE => true,
+            \Memcached::OPT_COMPRESSION          => $config['compress'],
+        ]);
+
+        return $conn;
     }
 
     public function open($path, $name): bool

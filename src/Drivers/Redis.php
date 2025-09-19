@@ -14,14 +14,22 @@ class Redis extends SetGet implements SessionHandlerInterface
     {
         parent::__construct($config);
 
-        $this->name = $config[Session::CONFIG_START_OPTIONS][Session::CONFIG_START_OPTIONS_NAME];
-        $config     = $config[Session::CONFIG_REDIS_DS];
+        $this->name  = $config[Session::CONFIG_START_OPTIONS][Session::CONFIG_START_OPTIONS_NAME];
+        $connections = $config[Session::CONFIG_USER_CONNECTION];
+        $config      = $config[Session::CONFIG_REDIS_DS];
 
         ini_set('session.save_handler', 'redis');
         ini_set('session.save_path', $config['save_path']);
 
-        $this->conn = new \Redis();
-        $this->conn->pconnect($config['host'], $config['port'], $config['timeout'], $config['persistent_id']);
+        $this->conn = $connections[Session::CONFIG_REDIS_DS] ?? $this->getConnection($config);
+    }
+
+    protected function getConnection(array $config): \Redis
+    {
+        $conn = new \Redis();
+        $conn->pconnect($config['host'], $config['port'], $config['timeout'], $config['persistent_id']);
+
+        return $conn;
     }
 
     public function open($path, $name): bool

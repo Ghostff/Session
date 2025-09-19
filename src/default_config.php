@@ -7,7 +7,7 @@ return [
     Session::CONFIG_DRIVER        => File::class,       # Name of session driver to use: Session\[File|MySql|Cookie|Redis|Memcached]\Handler::class
     Session::CONFIG_ENCRYPT_DATA  => false,             # Allow encryption of session data.
     Session::CONFIG_SALT_KEY      => 'secret_salt_key', # Encryption key. ineffective if 'encrypt_data' = false
-    Session::CONFIG_AUTO_COMMIT   => false,             # Auto commit unsaved changes.
+    Session::CONFIG_AUTO_COMMIT   => true,             # Auto commit unsaved changes.
 
     # https://www.php.net/manual/en/session.configuration.php
     Session::CONFIG_START_OPTIONS => [

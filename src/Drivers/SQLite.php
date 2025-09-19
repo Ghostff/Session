@@ -23,14 +23,12 @@ class SQLite extends SetGet implements SessionHandlerInterface
         }
 
         parent::__construct($config);
-        $config = $config[Session::CONFIG_SQLITE_DS];
-        $dsn = "{$config['driver']}:{$config['db_path']}";
+        $connections = $config[Session::CONFIG_USER_CONNECTION];
+        $config      = $config[Session::CONFIG_SQLITE_DS];
         $this->table = $table = $config['db_table'];
 
         try {
-            $this->conn = new PDO($dsn, null, null, [
-                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-            ]);
+            $this->conn = $connections[Session::CONFIG_SQLITE_DS] ?? $this->getConnection($config);
 
             // Enable Write-Ahead Logging (WAL) mode
             $this->conn->exec('PRAGMA journal_mode = WAL');
@@ -46,6 +44,14 @@ class SQLite extends SetGet implements SessionHandlerInterface
                 `time` INTEGER NOT NULL
             )');
         }
+    }
+
+    protected function getConnection(array $config): PDO
+    {
+        $dsn = "{$config['driver']}:{$config['db_path']}";
+        return new PDO($dsn, null, null, [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        ]);
     }
 
     public function open($path, $name): bool
